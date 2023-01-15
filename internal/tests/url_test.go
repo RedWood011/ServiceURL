@@ -23,7 +23,6 @@ func TestCreateShortUrlOk(t *testing.T) {
 }
 
 func createShortUrl(t *testing.T, fullUrl string, router *deliveryhttp.Router) string {
-
 	expected := deliveryhttp.PostBatchShortUrlJSONBody{
 		Urls: []deliveryhttp.Url{
 			{
@@ -39,12 +38,12 @@ func createShortUrl(t *testing.T, fullUrl string, router *deliveryhttp.Router) s
 	require.Equal(t, http.StatusCreated, w.Code)
 
 	// get results
-	//var createdItem []deliveryhttp.CreatedItem
-	createdItem := make([]string, 1, 10)
+	var createdItem []deliveryhttp.CreatedItem
+
 	parseRespBody(t, w.Body.Bytes(), &createdItem)
 
 	//return createdItem[0].Id
-	return createdItem[0]
+	return createdItem[0].Id
 }
 
 func getFullUrlByID(t *testing.T, router *deliveryhttp.Router, id string) string { //[]deliveryhttp.Url

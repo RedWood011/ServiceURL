@@ -1,6 +1,9 @@
 package deliveryhttp
 
 import (
+	"fmt"
+	"io"
+	"log"
 	"net/http"
 
 	"github.com/RedWood011/ServiceURL/internal/entities"
@@ -44,10 +47,12 @@ func (r *Router) GetFullUrlByID(writer http.ResponseWriter, request *http.Reques
 func (r *Router) PostShortUrl(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	var urlsFull PostBatchShortUrlJSONBody
+
 	err := readBody(request.Body, &urlsFull)
 	if err != nil {
 		writeProcessBodyError(ctx, writer, err)
 	}
+
 	urls := urlsFull.toEntity()
 	if len(urls) == 0 {
 		writeSpecifiedError(ctx, writer, err)
@@ -56,6 +61,34 @@ func (r *Router) PostShortUrl(writer http.ResponseWriter, request *http.Request)
 	if err != nil {
 		writeSpecifiedError(ctx, writer, err)
 	}
-	//writeSuccessful(ctx, writer, http.StatusCreated, batchCreatedItemsFromService(createdIDs))
-	writeSuccessful(ctx, writer, http.StatusCreated, createdIDs)
+	writeSuccessful(ctx, writer, http.StatusCreated, batchCreatedItemsFromService(createdIDs))
+}
+
+func (router *Router) PostUrl(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	body, err := io.ReadAll(r.Body)
+	fmt.Println(body)
+	if err != nil {
+		http.Error(w, "Wrong with request", http.StatusBadRequest)
+		return
+	}
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
+
+	if len(body) == 0 {
+		http.Error(w, "Request body is empty", http.StatusBadRequest)
+		return
+	}
+
+	createdIDs, err := router.service.CreateShortUrl(ctx, []entities.Url{{
+		ID:      "",
+		FullUrl: string(body),
+	}})
+	if err != nil {
+		writeSpecifiedError(ctx, w, err)
+	}
+	writeSuccessful(ctx, w, http.StatusCreated, createdIDs)
 }

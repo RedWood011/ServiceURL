@@ -20,7 +20,8 @@ func NewRout(service service.Translation) *Router {
 func NewRouter(r chi.Router, serv service.Translation) chi.Router {
 	router := &Router{service: serv}
 	r.Get("/{id}", router.GetFullUrlByID)
-	r.Post("/", router.PostShortUrl)
+	r.Post("/url", router.PostShortUrl)
+	r.Post("/", router.PostUrl)
 
 	return r
 }
