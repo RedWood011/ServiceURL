@@ -90,5 +90,9 @@ func (router *Router) PostUrl(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeSpecifiedError(ctx, w, err)
 	}
-	writeSuccessful(ctx, w, http.StatusCreated, createdIDs)
+	w.WriteHeader(http.StatusCreated)
+	_, err = w.Write([]byte(createdIDs[0]))
+	if err != nil {
+		log.Println(err)
+	}
 }
