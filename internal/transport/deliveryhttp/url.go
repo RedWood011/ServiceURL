@@ -41,8 +41,8 @@ func (r *Router) GetFullUrlByID(writer http.ResponseWriter, request *http.Reques
 		http.Error(writer, err.Error(), http.StatusNotFound)
 		return
 	}
-	//writer.Header().Set("Location", fullUrl)
-	//writer.WriteHeader(http.StatusTemporaryRedirect)
+	writer.Header().Set("Location", fullUrl)
+	writer.WriteHeader(http.StatusTemporaryRedirect)
 
 	http.Redirect(writer, request, fullUrl, http.StatusTemporaryRedirect)
 }
