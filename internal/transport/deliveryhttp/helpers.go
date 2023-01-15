@@ -46,8 +46,7 @@ func writeSpecifiedError(ctx context.Context, w http.ResponseWriter, err error) 
 	var appErr *apperror.AppError
 	if errors.As(err, &appErr) {
 		if errors.Is(err, apperror.ErrNotFound) {
-			//writeErrStatus(ctx, w, http.StatusNotFound)
-			writeErrStatus(ctx, w, http.StatusBadRequest)
+			writeErrStatus(ctx, w, http.StatusNotFound)
 			return
 		}
 		writeErrStatus(ctx, w, http.StatusBadRequest)

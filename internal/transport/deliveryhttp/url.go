@@ -39,6 +39,7 @@ func (r *Router) GetFullUrlByID(writer http.ResponseWriter, request *http.Reques
 	fullUrl, err := r.service.GetUrlByID(ctx, urlID)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusNotFound)
+		return
 	}
 	writer.Header().Set("Location", fullUrl)
 	writer.WriteHeader(http.StatusTemporaryRedirect)
