@@ -24,6 +24,7 @@ func NewURLStorage() *URLStorage {
 func (s *URLStorage) CreateShortURL(ctx context.Context, urls []entities.URL) error {
 	s.m.Lock()
 	defer s.m.Unlock()
+
 	for _, url := range urls {
 		_, ok := s.cacheURL[url.FullURL]
 		if !ok {
@@ -40,10 +41,12 @@ func (s *URLStorage) GetFullURLByID(ctx context.Context, id string) (res string,
 	if ok {
 		return url, nil
 	}
+
 	return "", apperror.ErrNotFound
 }
 func (s *URLStorage) GetIDsByURLs(ctx context.Context, urls []string) (map[string]string, error) {
 	IDs := make(map[string]string, len(urls))
+
 	for _, url := range urls {
 		_, ok := s.cacheURL[url]
 		if ok {
@@ -53,5 +56,6 @@ func (s *URLStorage) GetIDsByURLs(ctx context.Context, urls []string) (map[strin
 	if len(IDs) > 0 {
 		return IDs, nil
 	}
+
 	return nil, apperror.ErrNotFound
 }

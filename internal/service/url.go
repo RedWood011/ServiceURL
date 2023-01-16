@@ -66,9 +66,11 @@ func (s *TranslationServer) CreateShortURL(ctx context.Context, urls []entities.
 				ID:      idByURL[fullURL],
 				FullURL: fullURL,
 			})
+
 			adr.Path = idByURL[fullURL]
 			IDs = append(IDs, adr.String())
 		}
 	}
+
 	return IDs, s.repo.CreateShortURL(ctx, createURLs)
 }
