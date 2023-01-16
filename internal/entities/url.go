@@ -5,12 +5,12 @@ import (
 	"time"
 )
 
-type Url struct {
+type URL struct {
 	ID      string
-	FullUrl string
+	FullURL string
 }
 
-func (u *Url) GenerateRandomString(n int) {
+func (u *URL) GenerateRandomString(n int) {
 	var res string
 	line := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 

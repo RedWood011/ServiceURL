@@ -15,13 +15,13 @@ type APIError struct {
 	Message string `json:"message"`
 }
 type CreatedItem struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
 func batchCreatedItemsFromService(createdIDs []string) []CreatedItem {
 	batchItems := make([]CreatedItem, 0, len(createdIDs))
 	for _, value := range createdIDs {
-		batchItems = append(batchItems, CreatedItem{Id: value})
+		batchItems = append(batchItems, CreatedItem{ID: value})
 	}
 	return batchItems
 }
