@@ -7,13 +7,13 @@ import (
 )
 
 type Translation interface {
-	GetUrlByID(ctx context.Context, id string) (string, error)
-	CreateShortUrl(ctx context.Context, urls []entities.Url) (IDs []string, err error)
+	GetURLByID(ctx context.Context, id string) (string, error)
+	CreateShortURL(ctx context.Context, urls []entities.URL) (IDs []string, err error)
 }
 type Storage interface {
-	GetFullUrlByID(ctx context.Context, id string) (res string, err error)
-	GetIDsByUrls(ctx context.Context, urls []string) (map[string]string, error)
-	CreateShortUrl(ctx context.Context, url []entities.Url) error
+	GetFullURLByID(ctx context.Context, id string) (res string, err error)
+	GetIDsByURLs(ctx context.Context, urls []string) (map[string]string, error)
+	CreateShortURL(ctx context.Context, url []entities.URL) error
 }
 
 // TranslationUseCase -.

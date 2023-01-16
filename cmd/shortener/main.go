@@ -37,8 +37,8 @@ func main() {
 	go func() {
 		<-sig
 
-		// Shutdown signal with grace period of 5 seconds
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 5*time.Second)
+		// Shutdown signal with grace period of 30 seconds
+		shutdownCtx, cancel := context.WithTimeout(serverCtx, 30*time.Second)
 
 		go func() {
 			<-shutdownCtx.Done()
@@ -53,6 +53,7 @@ func main() {
 			log.Fatal(err)
 		}
 		serverStopCtx()
+		cancel()
 	}()
 
 	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {

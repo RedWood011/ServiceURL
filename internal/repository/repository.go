@@ -8,6 +8,6 @@ import (
 func NewRepository(db string) service.Storage {
 	switch db {
 	default:
-		return cache.NewUrlStorage()
+		return cache.NewURLStorage()
 	}
 }
