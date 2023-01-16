@@ -9,40 +9,40 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetFullUrl(t *testing.T) {
+func TestGetFullURL(t *testing.T) {
 	testTable := []struct {
 		name     string
-		fullUrl  string
-		shortUrl string
+		fullURL  string
+		shortURL string
 		err      error
 	}{
 		{
-			name:     "ExistUrl",
-			fullUrl:  "adsasdasdfasdqwe",
-			shortUrl: "adr",
+			name:     "ExistURL",
+			fullURL:  "adsasdasdfasdqwe",
+			shortURL: "adr",
 			err:      nil,
 		},
 		{
-			name:     "DoesNotExistUrl",
-			fullUrl:  "",
-			shortUrl: "dasda",
+			name:     "DoesNotExistURL",
+			fullURL:  "",
+			shortURL: "dasda",
 			err:      apperror.ErrNotFound,
 		},
 	}
 
-	s := NewUrlStorage()
-	err := s.CreateShortUrl(context.Background(), []entities.Url{{
+	s := NewURLStorage()
+	err := s.CreateShortURL(context.Background(), []entities.URL{{
 		ID:      "adr",
-		FullUrl: "adsasdasdfasdqwe",
+		FullURL: "adsasdasdfasdqwe",
 	}})
 	assert.NoError(t, err)
 
 	for _, testCase := range testTable {
 		t.Run(testCase.name, func(t *testing.T) {
 
-			url, err := s.GetFullUrlByID(context.Background(), testCase.shortUrl)
+			url, err := s.GetFullURLByID(context.Background(), testCase.shortURL)
 			assert.Equal(t, err, testCase.err)
-			assert.Equal(t, testCase.fullUrl, url)
+			assert.Equal(t, testCase.fullURL, url)
 		})
 	}
 }

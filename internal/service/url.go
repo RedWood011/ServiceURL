@@ -12,19 +12,19 @@ import (
 
 const numberElement = 6
 
-func (s *TranslationServer) GetUrlByID(ctx context.Context, id string) (string, error) {
-	return s.repo.GetFullUrlByID(ctx, id)
+func (s *TranslationServer) GetURLByID(ctx context.Context, id string) (string, error) {
+	return s.repo.GetFullURLByID(ctx, id)
 }
 
-func (s *TranslationServer) GetIDsByUrls(ctx context.Context, urls []string) (map[string]string, error) {
-	return s.repo.GetIDsByUrls(ctx, urls)
+func (s *TranslationServer) GetIDsByURLs(ctx context.Context, urls []string) (map[string]string, error) {
+	return s.repo.GetIDsByURLs(ctx, urls)
 }
 
-func (s *TranslationServer) CreateShortUrl(ctx context.Context, urls []entities.Url) (IDs []string, err error) {
-	idByUrl := make(map[string]string, len(urls))
+func (s *TranslationServer) CreateShortURL(ctx context.Context, urls []entities.URL) (IDs []string, err error) {
+	idByURL := make(map[string]string, len(urls))
 	urlByID := make(map[string]string, len(urls))
-	createUrls := make([]entities.Url, len(urls))
-	fullUrls := make([]string, 0, len(urls))
+	createURLs := make([]entities.URL, len(urls))
+	fullURLs := make([]string, 0, len(urls))
 	IDs = make([]string, 0, len(urls))
 
 	adr, err := url.Parse(s.address)
@@ -35,40 +35,40 @@ func (s *TranslationServer) CreateShortUrl(ctx context.Context, urls []entities.
 	for i := 0; i < len(urls); i++ {
 		urls[i].GenerateRandomString(numberElement)
 		if urls[i].ID == "" {
-			return nil, fmt.Errorf("CreateShortUrl.EmptyShortUrl %w", err)
+			return nil, fmt.Errorf("CreateShortURL.EmptyShortURL %w", err)
 		}
 
-		idByUrl[urls[i].FullUrl] = urls[i].ID
-		urlByID[urls[i].ID] = urls[i].FullUrl
-		fullUrls = append(fullUrls, urls[i].FullUrl)
+		idByURL[urls[i].FullURL] = urls[i].ID
+		urlByID[urls[i].ID] = urls[i].FullURL
+		fullURLs = append(fullURLs, urls[i].FullURL)
 
 		adr.Path = urls[i].ID
 		IDs = append(IDs, adr.String())
 	}
 
-	existIDs, err := s.GetIDsByUrls(ctx, fullUrls)
+	existIDs, err := s.GetIDsByURLs(ctx, fullURLs)
 	if err != nil {
 		if errors.Is(err, apperror.ErrNotFound) {
-			return IDs, s.repo.CreateShortUrl(ctx, urls)
+			return IDs, s.repo.CreateShortURL(ctx, urls)
 		}
 		return nil, err
 	}
 
 	IDs = nil
-	for _, fullUrl := range fullUrls {
-		_, ok := existIDs[fullUrl]
+	for _, fullURL := range fullURLs {
+		_, ok := existIDs[fullURL]
 		if ok {
-			idByUrl[fullUrl] = existIDs[fullUrl]
-			adr.Path = idByUrl[fullUrl]
+			idByURL[fullURL] = existIDs[fullURL]
+			adr.Path = idByURL[fullURL]
 			IDs = append(IDs, adr.String())
 		} else {
-			createUrls = append(createUrls, entities.Url{
-				ID:      idByUrl[fullUrl],
-				FullUrl: fullUrl,
+			createURLs = append(createURLs, entities.URL{
+				ID:      idByURL[fullURL],
+				FullURL: fullURL,
 			})
-			adr.Path = idByUrl[fullUrl]
+			adr.Path = idByURL[fullURL]
 			IDs = append(IDs, adr.String())
 		}
 	}
-	return IDs, s.repo.CreateShortUrl(ctx, createUrls)
+	return IDs, s.repo.CreateShortURL(ctx, createURLs)
 }

@@ -1,8 +1,11 @@
 package tests
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
@@ -13,57 +16,49 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateShortUrlOk(t *testing.T) {
+func TestCreateURLTextOk(t *testing.T) {
 	// initial preparations
 	r := initTestEnv()
-	fullUrl := "https://www.google.com/?safe=active&ssui=on"
-	urls := createShortUrl(t, fullUrl, r)
+	fullURL := "https://www.google.com/?safe=active&ssui=on"
+	urls := createShortURL(t, fullURL, r)
 
 	adr, err := url.Parse(urls)
 	assert.NoError(t, err)
 	id := strings.ReplaceAll(adr.Path, "/", "")
 
-	actual := getFullUrlByID(t, r, id)
+	actual := getFullURLByID(t, r, id)
 	// get result
-	assert.Equal(t, fullUrl, actual)
+	assert.Equal(t, fullURL, actual)
 }
 
-func createShortUrl(t *testing.T, fullUrl string, router *deliveryhttp.Router) string {
-	expected := deliveryhttp.PostBatchShortUrlJSONBody{
-		Urls: []deliveryhttp.Url{
-			{
-				FullUrl: fullUrl,
-				ID:      "",
-			},
-		},
-	}
-
+func createShortURL(t *testing.T, fullURL string, router *deliveryhttp.Router) string {
 	// request execution
-	r, w := newReqResp(http.MethodPost, createReqBody(t, expected))
-	router.PostShortUrl(w, r)
+	r := httptest.NewRequest(http.MethodPost, "/anything", bytes.NewBuffer([]byte(fullURL)))
+	w := httptest.NewRecorder()
+	router.PostBatchURLText(w, r)
 	require.Equal(t, http.StatusCreated, w.Code)
 
 	// get results
-	var createdItem []deliveryhttp.CreatedItem
+	var createdItem string
+	body, err := io.ReadAll(w.Body)
+	assert.NoError(t, err)
+	createdItem = string(body)
+	assert.NoError(t, r.Body.Close())
 
-	parseRespBody(t, w.Body.Bytes(), &createdItem)
-
-	return createdItem[0].Id
+	return createdItem
 }
 
-func getFullUrlByID(t *testing.T, router *deliveryhttp.Router, id string) string { //[]deliveryhttp.Url
-	ids := make([]string, 0, 0)
-	ids = append(ids, id)
+func getFullURLByID(t *testing.T, router *deliveryhttp.Router, id string) string { //[]deliveryhttp.URL
 	r, w := newReqResp(http.MethodGet, nil)
 
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("id", id)
 	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
 
-	router.GetFullUrlByID(w, r)
+	router.GetTextURLByID(w, r)
 
 	require.Equal(t, 307, w.Code)
-	fullUrl := w.Header().Get("Location")
-	return fullUrl
+	fullURL := w.Header().Get("Location")
+	return fullURL
 
 }

@@ -9,45 +9,44 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type Url struct {
-	FullUrl string `json:"fullUrl"`
+type URL struct {
+	FullURL string `json:"fullURL"`
 	ID      string
 }
 
-type PostBatchShortUrlJSONBody struct {
-	Urls []Url `json:"urls"`
+type PostBatchShortURLJSONBody struct {
+	URLs []URL `json:"URLs"`
 }
 
-func (u PostBatchShortUrlJSONBody) toEntity() []entities.Url {
-	urls := make([]entities.Url, 0, len(u.Urls))
-	for _, url := range u.Urls {
-		urls = append(urls, entities.Url{
-			FullUrl: url.FullUrl,
+func (u PostBatchShortURLJSONBody) toEntity() []entities.URL {
+	urls := make([]entities.URL, 0, len(u.URLs))
+	for _, url := range u.URLs {
+		urls = append(urls, entities.URL{
+			FullURL: url.FullURL,
 		})
 	}
 	return urls
 }
 
-func (r *Router) GetFullUrlByID(writer http.ResponseWriter, request *http.Request) {
+func (r *Router) GetTextURLByID(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	urlID := chi.URLParam(request, "id")
 	if len(urlID) == 0 {
 		http.Error(writer, "Emplty urlID", http.StatusBadRequest)
 		return
 	}
-	fullUrl, err := r.service.GetUrlByID(ctx, urlID)
+	fullURL, err := r.service.GetURLByID(ctx, urlID)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusNotFound)
 		return
 	}
-	writer.Header().Set("Location", fullUrl)
+	writer.Header().Set("Location", fullURL)
 	writer.WriteHeader(http.StatusTemporaryRedirect)
-
 }
 
-func (r *Router) PostShortUrl(writer http.ResponseWriter, request *http.Request) {
+func (r *Router) PostBatchURLJSON(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
-	var urlsFull PostBatchShortUrlJSONBody
+	var urlsFull PostBatchShortURLJSONBody
 
 	err := readBody(request.Body, &urlsFull)
 	if err != nil {
@@ -58,14 +57,14 @@ func (r *Router) PostShortUrl(writer http.ResponseWriter, request *http.Request)
 	if len(urls) == 0 {
 		writeSpecifiedError(ctx, writer, err)
 	}
-	createdIDs, err := r.service.CreateShortUrl(ctx, urls)
+	createdIDs, err := r.service.CreateShortURL(ctx, urls)
 	if err != nil {
 		writeSpecifiedError(ctx, writer, err)
 	}
 	writeSuccessful(ctx, writer, http.StatusCreated, batchCreatedItemsFromService(createdIDs))
 }
 
-func (router *Router) PostUrl(w http.ResponseWriter, r *http.Request) {
+func (router *Router) PostBatchURLText(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -84,14 +83,14 @@ func (router *Router) PostUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdIDs, err := router.service.CreateShortUrl(ctx, []entities.Url{{
+	createdIDs, err := router.service.CreateShortURL(ctx, []entities.URL{{
 		ID:      "",
-		FullUrl: string(body),
+		FullURL: string(body),
 	}})
 	if err != nil {
 		writeSpecifiedError(ctx, w, err)
 	}
-
+	//TODO Вынести в helpers
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write([]byte(createdIDs[0]))
 
