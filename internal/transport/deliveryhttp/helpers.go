@@ -52,7 +52,7 @@ func writeSpecifiedError(ctx context.Context, w http.ResponseWriter, err error) 
 		writeErrStatus(ctx, w, http.StatusBadRequest)
 		return
 	}
-	//writeErrStatus(ctx, w, http.StatusTeapot)
+
 	writeErrStatus(ctx, w, http.StatusBadRequest)
 }
 func writeErrStatus(ctx context.Context, w http.ResponseWriter, status int) {

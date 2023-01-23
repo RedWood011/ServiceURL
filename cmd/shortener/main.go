@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -18,7 +19,7 @@ import (
 const address = "http://localhost:8080"
 
 func main() {
-	repo := repository.NewRepository("")
+	repo := repository.NewRepository("defaultRepo")
 
 	serv := service.New(repo, address)
 	handler := chi.NewRouter()
@@ -42,7 +43,7 @@ func main() {
 
 		go func() {
 			<-shutdownCtx.Done()
-			if shutdownCtx.Err() == context.DeadlineExceeded {
+			if errors.Is(shutdownCtx.Err(), context.DeadlineExceeded) {
 				log.Fatal("graceful shutdown timed out.. forcing exit.")
 			}
 		}()

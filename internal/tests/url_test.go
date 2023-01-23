@@ -48,7 +48,7 @@ func createShortURL(t *testing.T, fullURL string, router *deliveryhttp.Router) s
 	return createdItem
 }
 
-func getFullURLByID(t *testing.T, router *deliveryhttp.Router, id string) string { //[]deliveryhttp.URL
+func getFullURLByID(t *testing.T, router *deliveryhttp.Router, id string) string {
 	r, w := newReqResp(http.MethodGet, nil)
 
 	rctx := chi.NewRouteContext()

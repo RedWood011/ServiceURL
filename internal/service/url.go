@@ -23,7 +23,7 @@ func (s *TranslationServer) GetIDsByURLs(ctx context.Context, urls []string) (ma
 func (s *TranslationServer) CreateShortURL(ctx context.Context, urls []entities.URL) (IDs []string, err error) {
 	idByURL := make(map[string]string, len(urls))
 	urlByID := make(map[string]string, len(urls))
-	createURLs := make([]entities.URL, len(urls))
+	createURLs := make([]entities.URL, 0, len(urls))
 	fullURLs := make([]string, 0, len(urls))
 	IDs = make([]string, 0, len(urls))
 
