@@ -10,7 +10,7 @@ import (
 )
 
 type URL struct {
-	FullURL string `json:"fullURL"`
+	FullURL string `json:"url"`
 	ID      string
 }
 
@@ -48,7 +48,7 @@ func (r *Router) GetTextURLByID(writer http.ResponseWriter, request *http.Reques
 	writer.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (r *Router) PostBatchURLJSON(writer http.ResponseWriter, request *http.Request) {
+func (r *Router) PostBatchURLsJSON(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	var urlsFull PostBatchShortURLJSONBody
 
@@ -67,6 +67,29 @@ func (r *Router) PostBatchURLJSON(writer http.ResponseWriter, request *http.Requ
 		writeSpecifiedError(ctx, writer, err)
 	}
 	writeSuccessful(ctx, writer, http.StatusCreated, batchCreatedItemsFromService(createdIDs))
+}
+
+func (r *Router) PostBatchSingleURLJSON(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	var url URL
+
+	err := readBody(request.Body, &url)
+	if err != nil {
+		writeProcessBodyError(ctx, writer, err)
+	}
+
+	if len(url.FullURL) == 0 {
+		writeSpecifiedError(ctx, writer, err)
+	}
+
+	createdIDs, err := r.service.CreateShortURL(ctx, []entities.URL{{
+		ID:      "",
+		FullURL: url.FullURL,
+	}})
+	if err != nil {
+		writeSpecifiedError(ctx, writer, err)
+	}
+	writeSuccessful(ctx, writer, http.StatusCreated, batchCreatedItemFromService(createdIDs[0]))
 }
 
 func (r *Router) PostBatchURLText(writer http.ResponseWriter, request *http.Request) {

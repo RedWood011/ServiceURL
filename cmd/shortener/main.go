@@ -23,9 +23,8 @@ func main() {
 
 	serv := service.New(repo, address)
 	handler := chi.NewRouter()
-	deliveryhttp.NewRouter(handler, serv)
 	httpServer := http.Server{
-		Handler: handler,
+		Handler: deliveryhttp.NewRouter(handler, serv),
 		Addr:    ":8080",
 	}
 

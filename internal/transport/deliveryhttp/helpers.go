@@ -15,7 +15,7 @@ type APIError struct {
 	Message string `json:"message"`
 }
 type CreatedItem struct {
-	ID string `json:"id"`
+	ID string `json:"result"`
 }
 
 func batchCreatedItemsFromService(createdIDs []string) []CreatedItem {
@@ -24,6 +24,10 @@ func batchCreatedItemsFromService(createdIDs []string) []CreatedItem {
 		batchItems = append(batchItems, CreatedItem{ID: value})
 	}
 	return batchItems
+}
+
+func batchCreatedItemFromService(createdID string) CreatedItem {
+	return CreatedItem{ID: createdID}
 }
 
 func readBody(body io.Reader, receiver interface{}) error {
