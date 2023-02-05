@@ -35,17 +35,17 @@ func TestJSONCreateSingleURLOk(t *testing.T) {
 	// initial preparations
 	r := initTestEnv(t)
 
-	fullUrl := "https://www.google.com/?safe=active&ssui=on"
-	createdShortUrl := createJSONSingleShortURL(t, r, fullUrl)
+	fullURL := "https://www.google.com/?safe=active&ssui=on"
+	createdShortURL := createJSONSingleShortURL(t, r, fullURL)
 
-	adr, err := url.Parse(createdShortUrl)
+	adr, err := url.Parse(createdShortURL)
 	assert.NoError(t, err)
 
 	id := strings.ReplaceAll(adr.Path, "/", "")
 	// get result
 	actual := getFullURLByID(t, r, id)
 
-	assert.Equal(t, fullUrl, actual)
+	assert.Equal(t, fullURL, actual)
 }
 
 func createJSONSingleShortURL(t *testing.T, router *deliveryhttp.Router, url string) string {
