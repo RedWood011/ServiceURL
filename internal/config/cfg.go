@@ -22,7 +22,7 @@ func NewConfig() *Config {
 	}
 
 	if cfg.FilePath = os.Getenv("FILE_STORAGE_PATH"); cfg.FilePath == "" {
-		flag.StringVar(&cfg.FilePath, "f", "", "File storage path")
+		flag.StringVar(&cfg.FilePath, "f", "/Users/evyaroshen/GolandProjects/yandex/ServiceURL/words.json", "File storage path")
 	}
 
 	flag.Parse()

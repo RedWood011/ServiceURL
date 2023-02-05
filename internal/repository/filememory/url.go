@@ -8,8 +8,8 @@ import (
 )
 
 func (s *FileStorage) CreateShortURL(ctx context.Context, urls []entities.URL) error {
-	s.m.Unlock()
-	defer s.m.Lock()
+	s.m.Lock()
+	defer s.m.Unlock()
 
 	for _, url := range urls {
 		s.cacheShortURL[url.ID] = url.FullURL
@@ -19,8 +19,8 @@ func (s *FileStorage) CreateShortURL(ctx context.Context, urls []entities.URL) e
 }
 
 func (s *FileStorage) GetFullURLByID(ctx context.Context, id string) (res string, err error) {
-	s.m.Unlock()
-	defer s.m.Lock()
+	s.m.Lock()
+	defer s.m.Unlock()
 
 	url, ok := s.cacheShortURL[id]
 	if ok {

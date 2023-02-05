@@ -25,9 +25,9 @@ func main() {
 	}
 
 	serv := service.New(repo, cfg.Address)
-	handler := chi.NewRouter()
+
 	httpServer := http.Server{
-		Handler: deliveryhttp.NewRouter(handler, serv),
+		Handler: deliveryhttp.NewRouter(chi.NewRouter(), serv),
 		Addr:    cfg.Port,
 	}
 
