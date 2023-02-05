@@ -10,22 +10,25 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/RedWood011/ServiceURL/internal/config"
 	"github.com/RedWood011/ServiceURL/internal/repository"
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
 	"github.com/go-chi/chi/v5"
 )
 
-const address = "http://localhost:8080"
-
 func main() {
-	repo := repository.NewRepository("defaultRepo")
+	cfg := config.NewConfig()
+	repo, err := repository.NewRepository(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	serv := service.New(repo, address)
+	serv := service.New(repo, cfg.Address)
 	handler := chi.NewRouter()
 	httpServer := http.Server{
 		Handler: deliveryhttp.NewRouter(handler, serv),
-		Addr:    ":8080",
+		Addr:    cfg.Port,
 	}
 
 	// Server run context
@@ -39,6 +42,11 @@ func main() {
 
 		// Shutdown signal with grace period of 30 seconds
 		shutdownCtx, cancel := context.WithTimeout(serverCtx, 30*time.Second)
+
+		err = serv.Repo.SaveDone()
+		if err != nil {
+			log.Fatal("SaveDone error")
+		}
 
 		go func() {
 			<-shutdownCtx.Done()

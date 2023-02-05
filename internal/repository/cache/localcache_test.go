@@ -30,7 +30,7 @@ func TestGetFullURL(t *testing.T) {
 		},
 	}
 
-	s := NewURLStorage()
+	s, _ := NewMemoryStorage()
 	err := s.CreateShortURL(context.Background(), []entities.URL{{
 		ID:      "adr",
 		FullURL: "adsasdasdfasdqwe",
