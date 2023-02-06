@@ -14,15 +14,17 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
 )
 
-func initTestEnv(t *testing.T) *deliveryhttp.Router {
-	cfg := config.NewConfig()
-	repo, err := repository.NewRepository(cfg)
-	if err != nil {
-		t.Fatal(err)
+func initTestEnv() (*deliveryhttp.Router, error) {
+	cfg := &config.Config{
+		Port:     ":8080",
+		Address:  "http://localhost:8080/",
+		FilePath: "",
 	}
-	sv := service.New(repo, "http://localhost:8080")
+	repo, err := repository.NewRepository(cfg)
+
+	sv := service.New(repo, cfg.Address)
 	router := deliveryhttp.NewRout(sv)
-	return router
+	return router, err
 }
 
 func newReqResp(method string, body io.Reader) (*http.Request, *httptest.ResponseRecorder) {

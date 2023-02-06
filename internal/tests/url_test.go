@@ -18,7 +18,8 @@ import (
 
 func TestTextCreateURLOk(t *testing.T) {
 	// initial preparations
-	r := initTestEnv(t)
+	r, err := initTestEnv()
+	assert.NoError(t, err)
 	fullURL := "https://www.google.com/?safe=active&ssui=on"
 	URL := createTextShortURL(t, fullURL, r)
 
@@ -33,8 +34,8 @@ func TestTextCreateURLOk(t *testing.T) {
 
 func TestJSONCreateSingleURLOk(t *testing.T) {
 	// initial preparations
-	r := initTestEnv(t)
-
+	r, err := initTestEnv()
+	assert.NoError(t, err)
 	fullURL := "https://www.google.com/?safe=active&ssui=on"
 	createdShortURL := createJSONSingleShortURL(t, r, fullURL)
 
