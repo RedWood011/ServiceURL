@@ -8,17 +8,23 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/RedWood011/ServiceURL/internal/config"
 	"github.com/RedWood011/ServiceURL/internal/repository"
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
 )
 
-func initTestEnv() *deliveryhttp.Router {
-	repo := repository.NewRepository("")
+func initTestEnv() (*deliveryhttp.Router, error) {
+	cfg := &config.Config{
+		Port:     ":8080",
+		Address:  "http://localhost:8080/",
+		FilePath: "",
+	}
+	repo, err := repository.NewRepository(cfg)
 
-	sv := service.New(repo, "http://localhost:8080")
+	sv := service.New(repo, cfg.Address)
 	router := deliveryhttp.NewRout(sv)
-	return router
+	return router, err
 }
 
 func newReqResp(method string, body io.Reader) (*http.Request, *httptest.ResponseRecorder) {

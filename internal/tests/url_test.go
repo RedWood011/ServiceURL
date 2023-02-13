@@ -16,13 +16,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateURLTextOk(t *testing.T) {
+func TestTextCreateURLOk(t *testing.T) {
 	// initial preparations
-	r := initTestEnv()
+	r, err := initTestEnv()
+	assert.NoError(t, err)
 	fullURL := "https://www.google.com/?safe=active&ssui=on"
-	urls := createShortURL(t, fullURL, r)
+	URL := createTextShortURL(t, fullURL, r)
 
-	adr, err := url.Parse(urls)
+	adr, err := url.Parse(URL)
 	assert.NoError(t, err)
 	id := strings.ReplaceAll(adr.Path, "/", "")
 
@@ -31,7 +32,40 @@ func TestCreateURLTextOk(t *testing.T) {
 	assert.Equal(t, fullURL, actual)
 }
 
-func createShortURL(t *testing.T, fullURL string, router *deliveryhttp.Router) string {
+func TestJSONCreateSingleURLOk(t *testing.T) {
+	// initial preparations
+	r, err := initTestEnv()
+	assert.NoError(t, err)
+	fullURL := "https://www.google.com/?safe=active&ssui=on"
+	createdShortURL := createJSONSingleShortURL(t, r, fullURL)
+
+	adr, err := url.Parse(createdShortURL)
+	assert.NoError(t, err)
+
+	id := strings.ReplaceAll(adr.Path, "/", "")
+	// get result
+	actual := getFullURLByID(t, r, id)
+
+	assert.Equal(t, fullURL, actual)
+}
+
+func createJSONSingleShortURL(t *testing.T, router *deliveryhttp.Router, url string) string {
+	expected := deliveryhttp.URL{FullURL: url}
+
+	r, w := newReqResp(http.MethodPost, createReqBody(t, expected))
+
+	router.PostBatchSingleURLJSON(w, r)
+	require.Equal(t, http.StatusCreated, w.Code)
+
+	var createdItem deliveryhttp.CreatedItem
+
+	parseRespBody(t, w.Body.Bytes(), &createdItem)
+	require.NotEqual(t, createdItem.ID, "")
+
+	return createdItem.ID
+}
+
+func createTextShortURL(t *testing.T, fullURL string, router *deliveryhttp.Router) string {
 	// request execution
 	r := httptest.NewRequest(http.MethodPost, "/anything", bytes.NewBuffer([]byte(fullURL)))
 	w := httptest.NewRecorder()
