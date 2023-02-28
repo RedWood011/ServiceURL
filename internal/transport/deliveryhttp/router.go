@@ -20,14 +20,23 @@ func NewRout(service service.Translation) *Router {
 	}
 }
 
-func NewRouter(r chi.Router, serv service.Translation) chi.Router {
+func NewRouter(r chi.Router, serv service.Translation, key string) chi.Router {
 	router := &Router{service: serv}
+
+	r.Use(middleware.Logger)
 	r.Use(middleware.Compress(compressionLevel))
 	r.Use(usermiddleware.GzipHeader)
-	r.Get("/{id}", router.GetTextURLByID)
-	r.Post("/url", router.PostBatchURLsJSON)
-	r.Post("/api/shorten", router.PostBatchSingleURLJSON)
+	r.Use(usermiddleware.Cookie(key))
+
+	r.Get("/{id}", router.GetURLByIDText)
 	r.Post("/", router.PostBatchURLText)
 
+	r.Get("/api/user/urls", router.GetUserURLsJSON)
+
+	r.Post("/api/shorten", router.PostBatchSingleURLJSON)
+
+	r.Post("/url", router.PostBatchURLsJSON)
+
+	r.Get("/ping", router.PingDB)
 	return r
 }

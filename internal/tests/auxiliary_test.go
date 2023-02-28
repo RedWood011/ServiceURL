@@ -23,6 +23,7 @@ func initTestEnv() (*deliveryhttp.Router, error) {
 	repo, err := repository.NewRepository(cfg)
 
 	sv := service.New(repo, cfg.Address)
+
 	router := deliveryhttp.NewRout(sv)
 	return router, err
 }

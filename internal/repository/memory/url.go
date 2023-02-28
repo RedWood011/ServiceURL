@@ -1,4 +1,4 @@
-package filememory
+package memory
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/entities"
 )
 
-func (s *FileStorage) CreateShortURL(ctx context.Context, url entities.URL) (string, error) {
+func (s *MemoryStorage) CreateShortURL(ctx context.Context, url entities.URL) (string, error) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	// проверка, что не существует такого ID
@@ -43,7 +43,7 @@ func (s *FileStorage) CreateShortURL(ctx context.Context, url entities.URL) (str
 	return "", nil
 }
 
-func (s *FileStorage) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
+func (s *MemoryStorage) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -54,7 +54,7 @@ func (s *FileStorage) GetFullURLByID(ctx context.Context, shortURL string) (res 
 	return "", apperror.ErrNotFound
 }
 
-func (s *FileStorage) GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error) {
+func (s *MemoryStorage) GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error) {
 	existData, ok := s.cacheShortURL[userID]
 	if !ok {
 		return nil, apperror.ErrNoContent
@@ -71,6 +71,6 @@ func (s *FileStorage) GetAllURLsByUserID(ctx context.Context, userID string) ([]
 }
 
 // TODO нормально реализовать, а не заглушка
-func (s *FileStorage) CreateShortURLs(ctx context.Context, urls []entities.URL) ([]entities.URL, error) {
+func (s *MemoryStorage) CreateShortURLs(ctx context.Context, urls []entities.URL) ([]entities.URL, error) {
 	return nil, nil
 }

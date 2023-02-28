@@ -15,19 +15,21 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/exp/slog"
 )
 
 func main() {
 	cfg := config.NewConfig()
+	logger := slog.New(slog.NewTextHandler(os.Stderr))
 	repo, err := repository.NewRepository(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	serv := service.New(repo, cfg.Address)
+	serv := service.New(repo, logger, cfg.Address)
 
 	httpServer := http.Server{
-		Handler: deliveryhttp.NewRouter(chi.NewRouter(), serv),
+		Handler: deliveryhttp.NewRouter(chi.NewRouter(), serv, cfg.KeyHash),
 		Addr:    cfg.Port,
 	}
 
@@ -56,7 +58,7 @@ func main() {
 		}()
 
 		// Trigger graceful shutdown
-		err := httpServer.Shutdown(shutdownCtx)
+		err = httpServer.Shutdown(shutdownCtx)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -64,7 +66,7 @@ func main() {
 		cancel()
 	}()
 
-	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+	if err = httpServer.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 }

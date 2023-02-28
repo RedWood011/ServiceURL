@@ -6,8 +6,10 @@ import (
 )
 
 type URL struct {
-	ID      string
-	FullURL string
+	UserID        string
+	ShortURL      string
+	FullURL       string
+	CorrelationID string
 }
 
 func (u *URL) GenerateRandomString(n int) {
@@ -19,6 +21,6 @@ func (u *URL) GenerateRandomString(n int) {
 	for i := 0; i < n; i++ {
 		res += string(line[rnd.Intn(len(line))])
 	}
-	u.ID = res
+	u.ShortURL = res
 
 }
