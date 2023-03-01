@@ -6,12 +6,14 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/RedWood011/ServiceURL/internal/config"
 	"github.com/RedWood011/ServiceURL/internal/repository"
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
+	"golang.org/x/exp/slog"
 )
 
 func initTestEnv() (*deliveryhttp.Router, error) {
@@ -21,8 +23,8 @@ func initTestEnv() (*deliveryhttp.Router, error) {
 		FilePath: "",
 	}
 	repo, err := repository.NewRepository(cfg)
-
-	sv := service.New(repo, cfg.Address)
+	logger := slog.New(slog.NewTextHandler(os.Stderr))
+	sv := service.New(repo, logger, cfg.Address)
 
 	router := deliveryhttp.NewRout(sv)
 	return router, err
