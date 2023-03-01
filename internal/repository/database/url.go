@@ -43,13 +43,13 @@ func (r Repository) GetAllURLsByUserID(ctx context.Context, userID string) ([]en
 }
 
 func (r Repository) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
-	query := `select short_url, original_url, user_id from urls where original_url = $1`
+	query := `select short_url, original_url, user_id from urls where short_url = $1`
 	var u entities.URL
 	result := r.conn.QueryRow(ctx, query, shortURL)
 	if err := result.Scan(&u.ShortURL, &u.FullURL, &u.UserID); err != nil {
-		return "", err
+		return "", apperror.ErrDataBase
 	}
-	return u.ShortURL, nil
+	return u.FullURL, nil
 }
 
 func (r Repository) findShortUrl(ctx context.Context, fullURL string) (string, error) {
@@ -57,7 +57,7 @@ func (r Repository) findShortUrl(ctx context.Context, fullURL string) (string, e
 	var u entities.URL
 	result := r.conn.QueryRow(ctx, query, fullURL)
 	if err := result.Scan(&u.UserID, &u.FullURL, &u.ShortURL); err != nil {
-		return "", err
+		return "", apperror.ErrDataBase
 	}
 	return u.ShortURL, nil
 }
