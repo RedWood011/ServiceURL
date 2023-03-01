@@ -35,7 +35,7 @@ func NewRouter(r chi.Router, serv service.Translation, key string) chi.Router {
 
 	r.Post("/api/shorten", router.PostBatchSingleURLJSON)
 
-	r.Post("/url", router.PostBatchURLsJSON)
+	r.Post("/api/shorten/batch", router.PostBatchURLsJSON)
 
 	r.Get("/ping", router.PingDB)
 	return r
