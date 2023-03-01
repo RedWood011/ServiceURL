@@ -52,7 +52,7 @@ func (r Repository) GetFullURLByID(ctx context.Context, shortURL string) (res st
 	return u.FullURL, nil
 }
 
-func (r Repository) findShortUrl(ctx context.Context, fullURL string) (string, error) {
+func (r Repository) findShortURL(ctx context.Context, fullURL string) (string, error) {
 	query := `select user_id, original_url, short_url from urls where original_url = $1`
 	var u entities.URL
 	result := r.conn.QueryRow(ctx, query, fullURL)
@@ -70,7 +70,7 @@ func (r Repository) CreateShortURL(ctx context.Context, url entities.URL) (strin
 	_, err := r.conn.Exec(ctx, sqlAddRow, url.UserID, url.FullURL, url.ShortURL)
 	if err != nil {
 		if errs.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			url.ShortURL, err = r.findShortUrl(ctx, url.FullURL)
+			url.ShortURL, err = r.findShortURL(ctx, url.FullURL)
 			if err != nil {
 				return "", apperror.ErrDataBase
 			}

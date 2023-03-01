@@ -14,7 +14,7 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-type Db interface {
+type DB interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 	Exec(ctx context.Context, sql string, arguments ...interface{}) (commandTag pgconn.CommandTag, err error)
 	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
