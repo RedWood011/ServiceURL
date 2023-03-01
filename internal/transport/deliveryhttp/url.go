@@ -25,8 +25,12 @@ type PostBatchShortURLJSONBody struct {
 
 type PostBatchShortURLsJSONBody struct {
 	CorrelationID string `json:"correlation_id"`
-	ShortURL      string `json:"short_url"`
 	FullURL       string `json:"original_url"`
+}
+
+type ResponseBatchShortURLsJSONBody struct {
+	CorrelationID string `json:"correlation_id"`
+	ShortURL      string `json:"short_url"`
 }
 
 type GetAllURLsUserID struct {
@@ -46,11 +50,11 @@ func URLsByUserIDFromService(urls []entities.URL) []GetAllURLsUserID {
 	return res
 }
 
-func PostBatchShortURLsJSONBodyFromService(urls []entities.URL) []PostBatchShortURLsJSONBody {
-	res := make([]PostBatchShortURLsJSONBody, 0, len(urls))
+func ResponseBatchShortURLsJSONBodyFromService(urls []entities.URL) []ResponseBatchShortURLsJSONBody {
+	res := make([]ResponseBatchShortURLsJSONBody, 0, len(urls))
 
 	for _, url := range urls {
-		res = append(res, PostBatchShortURLsJSONBody{
+		res = append(res, ResponseBatchShortURLsJSONBody{
 			ShortURL:      url.ShortURL,
 			CorrelationID: url.CorrelationID,
 		})
@@ -294,7 +298,7 @@ func (r *Router) PostBatchURLsJSON(writer http.ResponseWriter, request *http.Req
 			}
 		}
 	}
-	writeSuccessful(ctx, writer, http.StatusOK, PostBatchShortURLsJSONBodyFromService(createdIDs))
+	writeSuccessful(ctx, writer, http.StatusCreated, ResponseBatchShortURLsJSONBodyFromService(createdIDs))
 }
 
 func (r *Router) PingDB(writer http.ResponseWriter, request *http.Request) {
