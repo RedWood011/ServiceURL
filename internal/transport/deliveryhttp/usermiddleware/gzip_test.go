@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -33,7 +33,7 @@ func TestGzipHeader(t *testing.T) {
 	assert.NoError(t, err)
 
 	req.Header.Set("Content-Encoding", "gzip")
-	req.Body = ioutil.NopCloser(bytes.NewReader(b.Bytes()))
+	req.Body = io.NopCloser(bytes.NewReader(b.Bytes()))
 
 	gzipMiddleware.ServeHTTP(rr, req)
 

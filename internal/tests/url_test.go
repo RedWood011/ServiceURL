@@ -156,13 +156,13 @@ func createTextShortURL(t *testing.T, router *deliveryhttp.Router, fullURL, uuid
 	return createdItem
 }
 
-func getFullURLByID(t *testing.T, router *deliveryhttp.Router, shortUrl, uuid string) string {
+func getFullURLByID(t *testing.T, router *deliveryhttp.Router, shortURL, uuid string) string {
 	r, w := newReqResp(http.MethodGet, nil)
 	ctx := r.Context()
 	ctx = context.WithValue(ctx, "uuid", uuid)
 	r = r.WithContext(ctx)
 	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("id", shortUrl)
+	rctx.URLParams.Add("id", shortURL)
 	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
 
 	router.GetURLByIDText(w, r)
