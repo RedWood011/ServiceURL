@@ -9,10 +9,11 @@ import (
 
 	"github.com/RedWood011/ServiceURL/internal/apperror"
 	"github.com/RedWood011/ServiceURL/internal/entities"
+	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp/usermiddleware"
 	"github.com/go-chi/chi/v5"
 )
 
-const cookieName = "uuid"
+const cookieName usermiddleware.CookieType = "uuid"
 
 type URL struct {
 	FullURL string `json:"url"`
@@ -96,7 +97,7 @@ func (r *Router) GetUserURLsJSON(writer http.ResponseWriter, request *http.Reque
 	ctx := request.Context()
 	id := ctx.Value(cookieName).(string)
 	urls, err := r.service.GetAllURLsByUserID(ctx, id)
-	///fmt.Print(urls)
+
 	var appErr *apperror.AppError
 	if errors.As(err, &appErr) {
 
@@ -227,6 +228,7 @@ func (r *Router) PostBatchURLText(writer http.ResponseWriter, request *http.Requ
 func (r *Router) PostBatchSingleURLJSON(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	ID := ctx.Value(cookieName).(string)
+
 	var url URL
 
 	err := readBody(request.Body, &url)
@@ -275,6 +277,7 @@ func (r *Router) PostBatchSingleURLJSON(writer http.ResponseWriter, request *htt
 func (r *Router) PostBatchURLsJSON(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	ID := ctx.Value(cookieName).(string)
+
 	var batch []PostBatchShortURLsJSONBody
 
 	err := readBody(request.Body, &batch)

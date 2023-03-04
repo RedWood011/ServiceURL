@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type cookieType string
+type CookieType string
 
 const cookieName = "uuid"
 const timeSecondLive = 900
@@ -20,12 +20,13 @@ const timeSecondLive = 900
 func Cookie(key string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			var nameCookie cookieType
+			var nameCookie CookieType
+			nameCookie = cookieName
 			cookie, err := r.Cookie(cookieName)
 			if err != nil {
 				uid := setUUIDCookie(w, uuid.NewString(), key)
 				ctx := r.Context()
-				nameCookie = cookieName
+
 				ctx = context.WithValue(ctx, nameCookie, uid)
 				r = r.WithContext(ctx)
 				next.ServeHTTP(w, r)
