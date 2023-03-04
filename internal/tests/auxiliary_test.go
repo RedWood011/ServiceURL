@@ -21,7 +21,6 @@ import (
 
 func initTestEnv() (*deliveryhttp.Router, error) {
 	cfg := &config.Config{
-		Port:     ":8080",
 		Address:  "http://localhost:8080/",
 		FilePath: "",
 	}
