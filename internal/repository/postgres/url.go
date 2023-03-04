@@ -1,4 +1,4 @@
-package database
+package postgres
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 func (r Repository) GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error) {
 	query := `select short_url, original_url, user_id from urls where user_id = $1`
 	var result []entities.URL
-	rows, err := r.conn.Query(ctx, query, userID)
+	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, apperror.ErrDataBase
 	}
@@ -45,7 +45,7 @@ func (r Repository) GetAllURLsByUserID(ctx context.Context, userID string) ([]en
 func (r Repository) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
 	query := `select short_url, original_url, user_id from urls where short_url = $1`
 	var u entities.URL
-	result := r.conn.QueryRow(ctx, query, shortURL)
+	result := r.db.QueryRow(ctx, query, shortURL)
 	if err := result.Scan(&u.ShortURL, &u.FullURL, &u.UserID); err != nil {
 		return "", apperror.ErrDataBase
 	}
@@ -55,7 +55,7 @@ func (r Repository) GetFullURLByID(ctx context.Context, shortURL string) (res st
 func (r Repository) findShortURL(ctx context.Context, fullURL string) (string, error) {
 	query := `select user_id, original_url, short_url from urls where original_url = $1`
 	var u entities.URL
-	result := r.conn.QueryRow(ctx, query, fullURL)
+	result := r.db.QueryRow(ctx, query, fullURL)
 	if err := result.Scan(&u.UserID, &u.FullURL, &u.ShortURL); err != nil {
 		return "", apperror.ErrDataBase
 	}
@@ -67,7 +67,7 @@ func (r Repository) CreateShortURL(ctx context.Context, url entities.URL) (strin
 	sqlAddRow := `INSERT INTO urls (user_id, original_url, short_url)
 				 VALUES ($1, $2, $3) `
 	var pgErr *pgconn.PgError
-	_, err := r.conn.Exec(ctx, sqlAddRow, url.UserID, url.FullURL, url.ShortURL)
+	_, err := r.db.Exec(ctx, sqlAddRow, url.UserID, url.FullURL, url.ShortURL)
 	if err != nil {
 		if errs.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 			url.ShortURL, err = r.findShortURL(ctx, url.FullURL)
@@ -85,7 +85,7 @@ func (r Repository) CreateShortURL(ctx context.Context, url entities.URL) (strin
 }
 
 func (r Repository) CreateShortURLs(ctx context.Context, urls []entities.URL) ([]entities.URL, error) {
-	tx, err := r.conn.Begin(ctx)
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, apperror.ErrDataBase
 	}
@@ -103,13 +103,4 @@ func (r Repository) CreateShortURLs(ctx context.Context, urls []entities.URL) ([
 		return nil, apperror.ErrDataBase
 	}
 	return urls, nil
-}
-
-func (r Repository) SaveDone() error {
-	r.conn.Close()
-	return nil
-}
-
-func (r Repository) Ping(ctx context.Context) error {
-	return r.conn.Ping(ctx)
 }

@@ -1,4 +1,4 @@
-package memory
+package memoryfile
 
 import (
 	"context"
@@ -30,7 +30,7 @@ func TestGetFullURL(t *testing.T) {
 		},
 	}
 
-	s, _ := NewMemoryStorage()
+	s, _ := NewFileMap("")
 	_, err := s.CreateShortURL(context.Background(), entities.URL{
 		ShortURL: "adr",
 		FullURL:  "adsasdasdfasdqwe",
@@ -78,7 +78,7 @@ func TestGetAllURLsByUserID(t *testing.T) {
 		},
 	}
 
-	s, _ := NewMemoryStorage()
+	s, _ := NewFileMap("")
 
 	for _, testCase := range testTable {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -95,6 +95,93 @@ func TestGetAllURLsByUserID(t *testing.T) {
 			urls, err := s.GetAllURLsByUserID(context.Background(), testCase.getUserID)
 			assert.Equal(t, urls, testCase.want)
 			assert.Equal(t, err, testCase.err)
+
+		})
+	}
+}
+
+func TestCreateURLs(t *testing.T) {
+
+	testTable := []struct {
+		name     string
+		urls     []entities.URL
+		expected []entities.URL
+
+		err error
+	}{
+		{
+			name: "CreateURLs",
+			urls: []entities.URL{{
+				UserID:   "5555",
+				ShortURL: "1a2a3a4a5a",
+				FullURL:  "aaaaaaaaaaa",
+			},
+				{
+					UserID:   "5555",
+					ShortURL: "1b2b3b4b5b",
+					FullURL:  "bbbbbbbbbbb",
+				},
+				{
+					UserID:   "6666",
+					ShortURL: "1b2b3b4b5b",
+					FullURL:  "cccccccccc",
+				},
+				{
+					UserID:   "6666",
+					ShortURL: "1d2d3d4d5d",
+					FullURL:  "dddddddddd",
+				}},
+			expected: []entities.URL{{
+				UserID:  "5555",
+				FullURL: "aaaaaaaaaaa",
+			},
+				{
+					UserID:  "5555",
+					FullURL: "bbbbbbbbbbb",
+				},
+				{
+					UserID:  "6666",
+					FullURL: "cccccccccc",
+				},
+				{
+					UserID:  "6666",
+					FullURL: "dddddddddd",
+				}},
+			err: nil,
+		},
+		{
+			name: "ErrConflict",
+			urls: []entities.URL{{
+				UserID:   "5555",
+				ShortURL: "1a2a3a4a5a",
+				FullURL:  "aaaaaaaaaaa",
+			},
+				{
+					UserID:   "5555",
+					ShortURL: "1b2b3b4b5b",
+					FullURL:  "bbbbbbbbbbb",
+				},
+				{
+					UserID:   "5555",
+					ShortURL: "1b2b3b4b5b",
+					FullURL:  "bbbbbbbbbbb",
+				},
+				{
+					UserID:   "6666",
+					ShortURL: "1b2b3b4b5b",
+					FullURL:  "bbbbbbbbbbb",
+				}},
+			expected: nil,
+			err:      apperror.ErrConflict,
+		},
+	}
+
+	for _, testCase := range testTable {
+		s, _ := NewFileMap("")
+		t.Run(testCase.name, func(t *testing.T) {
+			res, err := s.CreateShortURLs(context.Background(), testCase.urls)
+			assert.Equal(t, res, testCase.expected)
+			assert.Equal(t, err, err)
 
 		})
 	}

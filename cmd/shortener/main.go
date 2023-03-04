@@ -12,6 +12,9 @@ import (
 
 	"github.com/RedWood011/ServiceURL/internal/config"
 	"github.com/RedWood011/ServiceURL/internal/repository"
+	"github.com/RedWood011/ServiceURL/internal/repository/memoryfile"
+
+	"github.com/RedWood011/ServiceURL/internal/repository/postgres"
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
 	"github.com/go-chi/chi/v5"
@@ -19,11 +22,31 @@ import (
 )
 
 func main() {
+	var db *postgres.Repository
+	var dbFile *memoryfile.FileMap
+	var err error
+
 	cfg := config.NewConfig()
+	ctx := context.Background()
 	logger := slog.New(slog.NewTextHandler(os.Stderr))
-	repo, err := repository.NewRepository(cfg)
+
+	if cfg.DatabaseDSN != "" {
+		db, err = postgres.NewDatabase(ctx, cfg.DatabaseDSN, cfg.CountRepetitionBD)
+	} else {
+		dbFile, err = memoryfile.NewFileMap(cfg.FilePath)
+	}
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	repo := repository.NewRepository(cfg.DatabaseDSN, db, dbFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = repo.Ping(ctx)
+	if err != nil {
+		log.Fatal("repo ping failed")
 	}
 
 	serv := service.New(repo, logger, cfg.Address)
@@ -34,7 +57,7 @@ func main() {
 	}
 
 	// Server run context
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
+	serverCtx, serverStopCtx := context.WithCancel(ctx)
 
 	// Listen for syscall signals for process to interrupt/quit
 	sig := make(chan os.Signal, 1)

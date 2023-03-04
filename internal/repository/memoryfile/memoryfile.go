@@ -1,4 +1,4 @@
-package filememory
+package memoryfile
 
 import (
 	"context"
@@ -8,25 +8,41 @@ import (
 	"sync"
 )
 
-type FileStorage struct {
+type FileMap struct {
 	m              sync.Mutex
 	LongByShortURL map[string]string
 	cacheShortURL  map[string]map[string]string
 	cacheLongURL   map[string]map[string]string
 	filepath       string
 }
+
+type Params struct {
+	UserID        string
+	ShortURL      string
+	FullURL       string
+	CorrelationID string
+}
+
 type write struct {
 	ShortURL string `json:"short_url"`
 	LongURL  string `json:"long_url"`
 	UserID   string `json:"userID"`
 }
 
-func NewFileStorage(path string) (*FileStorage, error) {
+func NewFileMap(path string) (*FileMap, error) {
+	if path == "" {
+		return &FileMap{
+			cacheShortURL:  make(map[string]map[string]string),
+			cacheLongURL:   make(map[string]map[string]string),
+			LongByShortURL: make(map[string]string),
+		}, nil
+	}
+
 	longByShortURL := make(map[string]string)
 	file, err := os.Stat(path)
 
 	if errors.Is(err, os.ErrNotExist) || file.Size() == 0 {
-		return &FileStorage{
+		return &FileMap{
 			filepath:       path,
 			LongByShortURL: longByShortURL,
 			cacheShortURL:  make(map[string]map[string]string),
@@ -41,7 +57,7 @@ func NewFileStorage(path string) (*FileStorage, error) {
 	var writer []write
 	err = json.NewDecoder(fp).Decode(&writer)
 	if err != nil {
-		return &FileStorage{}, err
+		return nil, err
 	}
 	cacheShortURL := make(map[string]map[string]string)
 	cacheLongURL := make(map[string]map[string]string)
@@ -66,10 +82,10 @@ func NewFileStorage(path string) (*FileStorage, error) {
 
 	err = fp.Close()
 	if err != nil {
-		return &FileStorage{}, err
+		return nil, err
 	}
 
-	return &FileStorage{
+	return &FileMap{
 		LongByShortURL: longByShortURL,
 		filepath:       path,
 		cacheShortURL:  cacheShortURL,
@@ -77,13 +93,17 @@ func NewFileStorage(path string) (*FileStorage, error) {
 	}, nil
 }
 
-func (s *FileStorage) SaveDone() error {
-	file, err := os.Create(s.filepath)
+func (f *FileMap) SaveDone() error {
+	if f.filepath == "" {
+		return nil
+	}
+
+	file, err := os.Create(f.filepath)
 	if err != nil {
 		return err
 	}
-	writer := make([]write, 0, len(s.LongByShortURL))
-	for userID, cacheShortByLong := range s.cacheShortURL {
+	writer := make([]write, 0, len(f.LongByShortURL))
+	for userID, cacheShortByLong := range f.cacheShortURL {
 		for shortURL, longURL := range cacheShortByLong {
 			writer = append(writer, write{
 				UserID:   userID,
@@ -105,6 +125,6 @@ func (s *FileStorage) SaveDone() error {
 	return nil
 }
 
-func (s *FileStorage) Ping(ctx context.Context) error {
+func (f *FileMap) Ping(ctx context.Context) error {
 	return nil
 }
