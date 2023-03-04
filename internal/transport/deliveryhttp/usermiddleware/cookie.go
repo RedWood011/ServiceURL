@@ -20,8 +20,8 @@ const timeSecondLive = 900
 func Cookie(key string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			var nameCookie CookieType
-			nameCookie = cookieName
+			var nameCookie CookieType = cookieName
+
 			cookie, err := r.Cookie(cookieName)
 			if err != nil {
 				uid := setUUIDCookie(w, uuid.NewString(), key)
