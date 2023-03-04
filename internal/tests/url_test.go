@@ -16,6 +16,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type cookieType string
+
+const cookieName cookieType = "uuid"
+
 func TestTextCreateURLOk(t *testing.T) {
 	// initial preparations
 	r, err := initTestEnv()
@@ -111,7 +115,7 @@ func createJSONSingleShortURL(t *testing.T, router *deliveryhttp.Router, url, uu
 	r, w := newReqResp(http.MethodPost, createReqBody(t, expected))
 
 	ctx := r.Context()
-	ctx = context.WithValue(ctx, "uuid", uuid)
+	ctx = context.WithValue(ctx, cookieName, uuid)
 
 	r = r.WithContext(ctx)
 
@@ -136,7 +140,7 @@ func createTextShortURL(t *testing.T, router *deliveryhttp.Router, fullURL, uuid
 
 	rctx := chi.NewRouteContext()
 	ctx := r.Context()
-	ctx = context.WithValue(ctx, "uuid", uuid)
+	ctx = context.WithValue(ctx, cookieName, uuid)
 
 	r = r.WithContext(ctx)
 	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
@@ -159,7 +163,7 @@ func createTextShortURL(t *testing.T, router *deliveryhttp.Router, fullURL, uuid
 func getFullURLByID(t *testing.T, router *deliveryhttp.Router, shortURL, uuid string) string {
 	r, w := newReqResp(http.MethodGet, nil)
 	ctx := r.Context()
-	ctx = context.WithValue(ctx, "uuid", uuid)
+	ctx = context.WithValue(ctx, cookieName, uuid)
 	r = r.WithContext(ctx)
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("id", shortURL)
@@ -175,7 +179,7 @@ func getFullURLByID(t *testing.T, router *deliveryhttp.Router, shortURL, uuid st
 func getAllURLsByUserID(t *testing.T, router *deliveryhttp.Router, uuid string) ([]deliveryhttp.GetAllURLsUserID, int) {
 	r, w := newReqResp(http.MethodGet, nil)
 	ctx := r.Context()
-	ctx = context.WithValue(ctx, "uuid", uuid)
+	ctx = context.WithValue(ctx, cookieName, uuid)
 	r = r.WithContext(ctx)
 
 	router.GetUserURLsJSON(w, r)

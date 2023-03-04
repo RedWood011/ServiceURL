@@ -12,17 +12,21 @@ import (
 	"github.com/google/uuid"
 )
 
+type cookieType string
+
 const cookieName = "uuid"
 const timeSecondLive = 900
 
 func Cookie(key string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var nameCookie cookieType
 			cookie, err := r.Cookie(cookieName)
 			if err != nil {
 				uid := setUUIDCookie(w, uuid.NewString(), key)
 				ctx := r.Context()
-				ctx = context.WithValue(ctx, cookieName, uid)
+				nameCookie = cookieName
+				ctx = context.WithValue(ctx, nameCookie, uid)
 				r = r.WithContext(ctx)
 				next.ServeHTTP(w, r)
 				return
@@ -33,7 +37,7 @@ func Cookie(key string) func(http.Handler) http.Handler {
 				// если в куки нет обоих параметров, то генерируем новый uid
 				uid := setUUIDCookie(w, uuid.NewString(), key)
 				ctx := r.Context()
-				ctx = context.WithValue(ctx, cookieName, uid)
+				ctx = context.WithValue(ctx, nameCookie, uid)
 				r = r.WithContext(ctx)
 				next.ServeHTTP(w, r)
 				return
@@ -41,7 +45,7 @@ func Cookie(key string) func(http.Handler) http.Handler {
 			uid, hash := parts[0], parts[1]
 			if checkHash(uid, hash, key) {
 				ctx := r.Context()
-				ctx = context.WithValue(ctx, cookieName, uid)
+				ctx = context.WithValue(ctx, nameCookie, uid)
 				r = r.WithContext(ctx)
 				next.ServeHTTP(w, r)
 				return
