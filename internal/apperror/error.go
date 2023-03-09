@@ -1,7 +1,10 @@
 package apperror
 
 var (
-	ErrNotFound = NewAppError(nil, "not found")
+	ErrNotFound  = NewAppError(nil, "not found")
+	ErrNoContent = NewAppError(nil, "no content")
+	ErrConflict  = NewAppError(nil, "conflict database")
+	ErrDataBase  = NewAppError(nil, "error write database")
 )
 
 type AppError struct {

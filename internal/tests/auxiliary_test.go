@@ -2,27 +2,42 @@ package tests
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/RedWood011/ServiceURL/internal/config"
 	"github.com/RedWood011/ServiceURL/internal/repository"
+	"github.com/RedWood011/ServiceURL/internal/repository/memoryfile"
+	"github.com/RedWood011/ServiceURL/internal/repository/postgres"
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
+	"golang.org/x/exp/slog"
 )
 
 func initTestEnv() (*deliveryhttp.Router, error) {
 	cfg := &config.Config{
-		Port:     ":8080",
 		Address:  "http://localhost:8080/",
 		FilePath: "",
 	}
-	repo, err := repository.NewRepository(cfg)
+	var db *postgres.Repository
+	var dbFile *memoryfile.FileMap
+	var err error
 
-	sv := service.New(repo, cfg.Address)
+	if cfg.DatabaseDSN != "" {
+		db, err = postgres.NewDatabase(context.Background(), cfg.DatabaseDSN, cfg.CountRepetitionBD)
+	} else {
+		dbFile, err = memoryfile.NewFileMap(cfg.FilePath)
+	}
+	repo := repository.NewRepository(cfg.DatabaseDSN, db, dbFile)
+
+	logger := slog.New(slog.NewTextHandler(os.Stderr))
+	sv := service.New(repo, logger, cfg.Address)
+
 	router := deliveryhttp.NewRout(sv)
 	return router, err
 }
