@@ -10,6 +10,7 @@ type URL struct {
 	ShortURL      string
 	FullURL       string
 	CorrelationID string
+	IsDeleted     bool
 }
 
 func (u *URL) GenerateRandomString(n int) {

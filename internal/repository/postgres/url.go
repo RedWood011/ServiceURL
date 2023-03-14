@@ -43,11 +43,14 @@ func (r Repository) GetAllURLsByUserID(ctx context.Context, userID string) ([]en
 }
 
 func (r Repository) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
-	query := `select short_url, original_url, user_id from urls where short_url = $1`
+	query := `select short_url, original_url, user_id, isDeleted from urls where short_url = $1`
 	var u entities.URL
 	result := r.db.QueryRow(ctx, query, shortURL)
-	if err := result.Scan(&u.ShortURL, &u.FullURL, &u.UserID); err != nil {
+	if err := result.Scan(&u.ShortURL, &u.FullURL, &u.UserID, &u.IsDeleted); err != nil {
 		return "", apperror.ErrDataBase
+	}
+	if u.IsDeleted {
+		return "", apperror.ErrGone
 	}
 	return u.FullURL, nil
 }
@@ -64,10 +67,10 @@ func (r Repository) findShortURL(ctx context.Context, fullURL string) (string, e
 
 func (r Repository) CreateShortURL(ctx context.Context, url entities.URL) (string, error) {
 
-	sqlAddRow := `INSERT INTO urls (user_id, original_url, short_url)
-				 VALUES ($1, $2, $3) `
+	sqlAddRow := `INSERT INTO urls (user_id, original_url, short_url,is_deleted)
+				 VALUES ($1, $2, $3, $4) `
 	var pgErr *pgconn.PgError
-	_, err := r.db.Exec(ctx, sqlAddRow, url.UserID, url.FullURL, url.ShortURL)
+	_, err := r.db.Exec(ctx, sqlAddRow, url.UserID, url.FullURL, url.ShortURL, url.IsDeleted)
 	if err != nil {
 		if errs.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
 			url.ShortURL, err = r.findShortURL(ctx, url.FullURL)
@@ -90,9 +93,9 @@ func (r Repository) CreateShortURLs(ctx context.Context, urls []entities.URL) ([
 		return nil, apperror.ErrDataBase
 	}
 	defer tx.Rollback(ctx)
-	query := `insert into urls (short_url, original_url, user_id) values ($1, $2, $3)`
+	query := `insert into urls (short_url, original_url, user_id,is_deleted) values ($1, $2, $3,$4)`
 	for _, url := range urls {
-		_, err = tx.Exec(context.Background(), query, url.ShortURL, url.FullURL, url.UserID)
+		_, err = tx.Exec(context.Background(), query, url.ShortURL, url.FullURL, url.UserID, url.IsDeleted)
 		if err != nil {
 			return nil, apperror.ErrDataBase
 		}
@@ -103,4 +106,25 @@ func (r Repository) CreateShortURLs(ctx context.Context, urls []entities.URL) ([
 		return nil, apperror.ErrDataBase
 	}
 	return urls, nil
+}
+
+func (r Repository) DeleteShortURLs(ctx context.Context, urls []string, userID string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	query := "UPDATE shortener.links SET is_deleted = true WHERE short_url = any($1) AND user_uid = $2"
+
+	_, err = tx.Exec(ctx, query, urls, userID)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }

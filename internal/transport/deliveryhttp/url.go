@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/RedWood011/ServiceURL/internal/apperror"
 	"github.com/RedWood011/ServiceURL/internal/entities"
@@ -311,4 +313,23 @@ func (r *Router) PingDB(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusInternalServerError)
 	}
 	writer.WriteHeader(http.StatusOK)
+}
+
+func (r *Router) DeleteBatchURLs(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	ID := ctx.Value(cookieName).(string)
+
+	var shortURls []string
+	if err := json.NewDecoder(request.Body).Decode(&shortURls); err != nil {
+		http.Error(writer, "Something wrong with request", http.StatusBadRequest)
+		return
+	}
+	var URLs []string
+	for _, short := range shortURls {
+		shortURL, _ := url.Parse(short)
+		URLs = append(URLs, strings.TrimLeft(shortURL.Path, "/"))
+	}
+	r.service.DeleteShortURLs(ctx, URLs, ID)
+
+	writer.WriteHeader(http.StatusAccepted)
 }

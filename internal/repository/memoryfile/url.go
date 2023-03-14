@@ -7,7 +7,7 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/entities"
 )
 
-func (f *FileMap) CreateShortURL(ctx context.Context, url entities.URL) (string, error) {
+func (f *FileMap) CreateShortURL(_ context.Context, url entities.URL) (string, error) {
 	f.m.Lock()
 	defer f.m.Unlock()
 	// проверка, что не существует такого ID
@@ -43,7 +43,7 @@ func (f *FileMap) CreateShortURL(ctx context.Context, url entities.URL) (string,
 	return "", nil
 }
 
-func (f *FileMap) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
+func (f *FileMap) GetFullURLByID(_ context.Context, shortURL string) (res string, err error) {
 	f.m.Lock()
 	defer f.m.Unlock()
 
@@ -54,7 +54,7 @@ func (f *FileMap) GetFullURLByID(ctx context.Context, shortURL string) (res stri
 	return "", apperror.ErrNotFound
 }
 
-func (f *FileMap) GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error) {
+func (f *FileMap) GetAllURLsByUserID(_ context.Context, userID string) ([]entities.URL, error) {
 	existData, ok := f.cacheShortURL[userID]
 	if !ok {
 		return nil, apperror.ErrNoContent
@@ -104,5 +104,9 @@ func (f *FileMap) rollback(urls []entities.URL) {
 		f.cacheLongURL[url.UserID] = exitLongURL
 		f.LongByShortURL = existLongByShort
 	}
+}
 
+// TODO реализовать для файлового хранилища
+func (f *FileMap) DeleteShortURLs(_ context.Context, _ []string, _ string) error {
+	return nil
 }
