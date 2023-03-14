@@ -47,6 +47,10 @@ func (f *FileMap) GetFullURLByID(_ context.Context, shortURL string) (res string
 	f.m.Lock()
 	defer f.m.Unlock()
 
+	if f.shortURLByIsDeleted[shortURL] {
+		return "", apperror.ErrGone
+	}
+
 	if fullURL, ok := f.LongByShortURL[shortURL]; ok {
 		return fullURL, nil
 	}
@@ -106,7 +110,12 @@ func (f *FileMap) rollback(urls []entities.URL) {
 	}
 }
 
-// TODO реализовать для файлового хранилища
-func (f *FileMap) DeleteShortURLs(_ context.Context, _ []string, _ string) error {
+func (f *FileMap) DeleteShortURLs(_ context.Context, urls []string, _ string) error {
+	f.m.Lock()
+	defer f.m.Unlock()
+	for _, short := range urls {
+		f.shortURLByIsDeleted[short] = true
+	}
+
 	return nil
 }
