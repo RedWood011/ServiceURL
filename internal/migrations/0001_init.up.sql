@@ -12,5 +12,6 @@ CREATE TABLE IF NOT EXISTS public.urls
     user_id       varchar,
     original_url  varchar,
     short_url     varchar,
+    is_deleted    boolean  NOT NULL DEFAULT FALSE,
     CONSTRAINT original_unique UNIQUE (original_url)
 );

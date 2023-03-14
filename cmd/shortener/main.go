@@ -13,18 +13,20 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/config"
 	"github.com/RedWood011/ServiceURL/internal/repository"
 	"github.com/RedWood011/ServiceURL/internal/repository/memoryfile"
-
 	"github.com/RedWood011/ServiceURL/internal/repository/postgres"
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
+	"github.com/RedWood011/ServiceURL/internal/workers"
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/exp/slog"
 )
 
 func main() {
-	var db *postgres.Repository
-	var dbFile *memoryfile.FileMap
-	var err error
+	var (
+		db     *postgres.Repository
+		dbFile *memoryfile.FileMap
+		err    error
+	)
 
 	cfg := config.NewConfig()
 	ctx := context.Background()
@@ -49,12 +51,18 @@ func main() {
 		log.Fatal("repo ping failed")
 	}
 
-	serv := service.New(repo, logger, cfg.Address)
+	workerPool := workers.New(cfg.NumWorkers, cfg.SizeBufWorker)
+
+	serv := service.New(repo, logger, workerPool, cfg.Address)
 
 	httpServer := http.Server{
 		Handler: deliveryhttp.NewRouter(chi.NewRouter(), serv, cfg.KeyHash),
 		Addr:    cfg.Port,
 	}
+
+	go func() {
+		workerPool.Run(ctx)
+	}()
 
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(ctx)

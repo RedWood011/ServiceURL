@@ -5,6 +5,7 @@ var (
 	ErrNoContent = NewAppError(nil, "no content")
 	ErrConflict  = NewAppError(nil, "conflict database")
 	ErrDataBase  = NewAppError(nil, "error write database")
+	ErrGone      = NewAppError(nil, "error not available url")
 )
 
 type AppError struct {

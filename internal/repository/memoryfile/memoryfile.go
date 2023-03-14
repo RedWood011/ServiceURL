@@ -9,11 +9,12 @@ import (
 )
 
 type FileMap struct {
-	m              sync.Mutex
-	LongByShortURL map[string]string
-	cacheShortURL  map[string]map[string]string
-	cacheLongURL   map[string]map[string]string
-	filepath       string
+	m                   sync.Mutex
+	LongByShortURL      map[string]string
+	cacheShortURL       map[string]map[string]string
+	cacheLongURL        map[string]map[string]string
+	filepath            string
+	shortURLByIsDeleted map[string]bool
 }
 
 type Params struct {
@@ -24,29 +25,33 @@ type Params struct {
 }
 
 type write struct {
-	ShortURL string `json:"short_url"`
-	LongURL  string `json:"long_url"`
-	UserID   string `json:"userID"`
+	ShortURL  string `json:"short_url"`
+	LongURL   string `json:"long_url"`
+	UserID    string `json:"userID"`
+	IsDeleted bool   `json:"is_deleted"`
 }
 
 func NewFileMap(path string) (*FileMap, error) {
 	if path == "" {
 		return &FileMap{
-			cacheShortURL:  make(map[string]map[string]string),
-			cacheLongURL:   make(map[string]map[string]string),
-			LongByShortURL: make(map[string]string),
+			cacheShortURL:       make(map[string]map[string]string),
+			cacheLongURL:        make(map[string]map[string]string),
+			LongByShortURL:      make(map[string]string),
+			shortURLByIsDeleted: make(map[string]bool),
 		}, nil
 	}
 
 	longByShortURL := make(map[string]string)
+	isDeleted := make(map[string]bool)
 	file, err := os.Stat(path)
 
 	if errors.Is(err, os.ErrNotExist) || file.Size() == 0 {
 		return &FileMap{
-			filepath:       path,
-			LongByShortURL: longByShortURL,
-			cacheShortURL:  make(map[string]map[string]string),
-			cacheLongURL:   make(map[string]map[string]string),
+			filepath:            path,
+			LongByShortURL:      longByShortURL,
+			shortURLByIsDeleted: isDeleted,
+			cacheShortURL:       make(map[string]map[string]string),
+			cacheLongURL:        make(map[string]map[string]string),
 		}, nil
 	}
 
@@ -72,6 +77,7 @@ func NewFileMap(path string) (*FileMap, error) {
 		}
 
 		longByShortURL[writer[i].ShortURL] = writer[i].LongURL
+		isDeleted[writer[i].ShortURL] = writer[i].IsDeleted
 
 		longByShort[writer[i].ShortURL] = writer[i].LongURL
 		shortByLong[writer[i].LongURL] = writer[i].ShortURL
@@ -86,10 +92,11 @@ func NewFileMap(path string) (*FileMap, error) {
 	}
 
 	return &FileMap{
-		LongByShortURL: longByShortURL,
-		filepath:       path,
-		cacheShortURL:  cacheShortURL,
-		cacheLongURL:   cacheLongURL,
+		LongByShortURL:      longByShortURL,
+		shortURLByIsDeleted: isDeleted,
+		filepath:            path,
+		cacheShortURL:       cacheShortURL,
+		cacheLongURL:        cacheLongURL,
 	}, nil
 }
 
@@ -105,10 +112,12 @@ func (f *FileMap) SaveDone() error {
 	writer := make([]write, 0, len(f.LongByShortURL))
 	for userID, cacheShortByLong := range f.cacheShortURL {
 		for shortURL, longURL := range cacheShortByLong {
+			isDel := f.shortURLByIsDeleted[shortURL]
 			writer = append(writer, write{
-				UserID:   userID,
-				ShortURL: shortURL,
-				LongURL:  longURL,
+				UserID:    userID,
+				ShortURL:  shortURL,
+				LongURL:   longURL,
+				IsDeleted: isDel,
 			})
 		}
 	}
@@ -125,6 +134,6 @@ func (f *FileMap) SaveDone() error {
 	return nil
 }
 
-func (f *FileMap) Ping(ctx context.Context) error {
+func (f *FileMap) Ping(_ context.Context) error {
 	return nil
 }

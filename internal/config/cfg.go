@@ -12,6 +12,8 @@ type Config struct {
 	KeyHash           string
 	DatabaseDSN       string
 	CountRepetitionBD string
+	NumWorkers        int
+	SizeBufWorker     int
 }
 
 func NewConfig() *Config {
@@ -41,6 +43,8 @@ func NewConfig() *Config {
 	if cfg.CountRepetitionBD = os.Getenv("REPETITION_CONNECT"); cfg.CountRepetitionBD == "" {
 		flag.StringVar(&cfg.CountRepetitionBD, "repetition", "5", "repetition connect database")
 	}
+	cfg.NumWorkers = 5
+	cfg.SizeBufWorker = 100
 
 	flag.Parse()
 
