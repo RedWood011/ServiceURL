@@ -16,6 +16,7 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/repository/postgres"
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
+	"github.com/RedWood011/ServiceURL/internal/workers"
 	"golang.org/x/exp/slog"
 )
 
@@ -27,6 +28,7 @@ func initTestEnv() (*deliveryhttp.Router, error) {
 	var db *postgres.Repository
 	var dbFile *memoryfile.FileMap
 	var err error
+	var worker workers.WorkerPool
 
 	if cfg.DatabaseDSN != "" {
 		db, err = postgres.NewDatabase(context.Background(), cfg.DatabaseDSN, cfg.CountRepetitionBD)
@@ -36,7 +38,7 @@ func initTestEnv() (*deliveryhttp.Router, error) {
 	repo := repository.NewRepository(cfg.DatabaseDSN, db, dbFile)
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr))
-	sv := service.New(repo, logger, cfg.Address)
+	sv := service.New(repo, logger, &worker, cfg.Address)
 
 	router := deliveryhttp.NewRout(sv)
 	return router, err
