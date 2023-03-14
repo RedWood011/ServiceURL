@@ -74,15 +74,21 @@ func (s *TranslationServer) DeleteShortURLs(ctx context.Context, urls []string, 
 func splitURLs(urls []string, size int) [][]string {
 	res := make([][]string, 0, len(urls)/size+1)
 	url := make([]string, 0, size)
+	count := 0
 	for i := 0; i < len(urls); i++ {
-		if i < size-1 {
+		if count < size {
 			url = append(url, urls[i])
-		} else if i == size {
-			res = append(res, urls)
+			count++
+		}
+
+		if count == size {
+			res = append(res, url)
 			url = nil
-			url = append(url, urls[i])
-		} else if i == len(urls)-1 && i < size {
-			res = append(res, urls)
+			count = 0
+		}
+
+		if i == len(urls)-1 && count < size && count != 0 {
+			res = append(res, url)
 		}
 	}
 	return res
