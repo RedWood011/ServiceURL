@@ -36,8 +36,8 @@ func NewConfig() *Config {
 	}
 
 	if cfg.DatabaseDSN = os.Getenv("DATABASE_DSN"); cfg.DatabaseDSN == "" {
-		flag.StringVar(&cfg.DatabaseDSN, "d", "", "Database connection")
-		//flag.StringVar(&cfg.DatabaseDSN, "d", "postgres://qwerty:qwerty@localhost:5436/postgres?sslmode=disable", "")
+		//flag.StringVar(&cfg.DatabaseDSN, "d", "", "Database connection")
+		flag.StringVar(&cfg.DatabaseDSN, "d", "postgres://qwerty:qwerty@localhost:5436/postgres?sslmode=disable", "")
 	}
 
 	if cfg.CountRepetitionBD = os.Getenv("REPETITION_CONNECT"); cfg.CountRepetitionBD == "" {

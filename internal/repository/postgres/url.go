@@ -43,7 +43,7 @@ func (r Repository) GetAllURLsByUserID(ctx context.Context, userID string) ([]en
 }
 
 func (r Repository) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
-	query := `select short_url, original_url, user_id, isDeleted from urls where short_url = $1`
+	query := `select short_url, original_url, user_id, is_deleted from urls where short_url = $1`
 	var u entities.URL
 	result := r.db.QueryRow(ctx, query, shortURL)
 	if err := result.Scan(&u.ShortURL, &u.FullURL, &u.UserID, &u.IsDeleted); err != nil {
@@ -93,9 +93,9 @@ func (r Repository) CreateShortURLs(ctx context.Context, urls []entities.URL) ([
 		return nil, apperror.ErrDataBase
 	}
 	defer tx.Rollback(ctx)
-	query := `insert into urls (short_url, original_url, user_id,is_deleted) values ($1, $2, $3,$4)`
+	query := `insert into urls (short_url, original_url, user_id,is_deleted) values ($1, $2, $3, $4)`
 	for _, url := range urls {
-		_, err = tx.Exec(context.Background(), query, url.ShortURL, url.FullURL, url.UserID, url.IsDeleted)
+		_, err = tx.Exec(ctx, query, url.ShortURL, url.FullURL, url.UserID, url.IsDeleted)
 		if err != nil {
 			return nil, apperror.ErrDataBase
 		}
@@ -115,7 +115,7 @@ func (r Repository) DeleteShortURLs(ctx context.Context, urls []string, userID s
 	}
 	defer tx.Rollback(ctx)
 
-	query := "UPDATE shortener.links SET is_deleted = true WHERE short_url = any($1) AND user_uid = $2"
+	query := "UPDATE urls SET is_deleted = true WHERE short_url = any($1) AND user_id = $2"
 
 	_, err = tx.Exec(ctx, query, urls, userID)
 	if err != nil {

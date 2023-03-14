@@ -154,6 +154,10 @@ func (r *Router) GetURLByIDText(writer http.ResponseWriter, request *http.Reques
 				writer.Write([]byte(err.Error()))
 				return
 			}
+			if errors.Is(err, apperror.ErrGone) {
+				writer.WriteHeader(http.StatusGone)
+				writer.Write([]byte(err.Error()))
+			}
 		}
 		//writeSpecifiedError(ctx, writer, err, "text", createdID)
 	}

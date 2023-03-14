@@ -60,6 +60,10 @@ func main() {
 		Addr:    cfg.Port,
 	}
 
+	go func() {
+		workerPool.Run(ctx)
+	}()
+
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(ctx)
 
