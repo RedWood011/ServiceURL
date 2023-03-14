@@ -81,6 +81,8 @@ func splitURLs(urls []string, size int) [][]string {
 			res = append(res, urls)
 			url = nil
 			url = append(url, urls[i])
+		} else if i == len(urls)-1 && i < size {
+			res = append(res, urls)
 		}
 	}
 	return res
