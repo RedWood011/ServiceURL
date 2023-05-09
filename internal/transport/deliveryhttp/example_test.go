@@ -2,7 +2,7 @@ package deliveryhttp
 
 import "github.com/go-chi/chi/v5"
 
-func ExamplePostBatchURLText() {
+func ExampleRouter_PostBatchURLText() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -12,7 +12,7 @@ func ExamplePostBatchURLText() {
 	rtr.Post("/", router.PostBatchURLText)
 }
 
-func ExamplePostBatchSingleURLJSON() {
+func ExampleRouter_PostBatchSingleURLJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -22,7 +22,7 @@ func ExamplePostBatchSingleURLJSON() {
 	rtr.Post("/api/shorten", router.PostBatchSingleURLJSON)
 }
 
-func ExamplePostBatchURLsJSON() {
+func ExampleRouter_PostBatchURLsJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -32,7 +32,7 @@ func ExamplePostBatchURLsJSON() {
 	rtr.Post("/api/shorten/batch", router.PostBatchURLsJSON)
 }
 
-func ExampleGetURLByIDText() {
+func ExampleRouter_GetURLByIDText() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -42,7 +42,7 @@ func ExampleGetURLByIDText() {
 	rtr.Post("/{id}", router.GetURLByIDText)
 }
 
-func ExampleGetUserURLsJSON() {
+func ExampleRouter_GetUserURLsJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
