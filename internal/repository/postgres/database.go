@@ -14,12 +14,12 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-// Repository ...
+// Repository Repo.....
 type Repository struct {
 	DB *pgxpool.Pool
 }
 
-// NewDatabase ...
+// NewDatabase Создать бд.....
 func NewDatabase(ctx context.Context, dsn string, maxAttempts string) (db *Repository, err error) {
 	var pool *pgxpool.Pool
 
@@ -70,12 +70,12 @@ func startMigration(dsn string) (bool, error) {
 	return true, nil
 }
 
-// Ping ...
+// Ping Пинг...
 func (r *Repository) Ping(ctx context.Context) error {
 	return r.DB.Ping(ctx)
 }
 
-// SaveDone ...
+// SaveDone Сохранение...
 func (r *Repository) SaveDone() error {
 	r.DB.Close()
 	return nil
