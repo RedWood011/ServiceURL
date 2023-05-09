@@ -18,6 +18,7 @@ type Config struct {
 	SizeBufWorker     int
 }
 
+// NewConfig Создание конфигурации
 func NewConfig() *Config {
 	cfg := &Config{}
 	if cfg.Port = os.Getenv("SERVER_ADDRESS"); cfg.Port == "" {

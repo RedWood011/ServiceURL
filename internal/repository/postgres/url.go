@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgerrcode"
 )
 
+// GetAllURLsByUserID
 func (r Repository) GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error) {
 	query := `select short_url, original_url, user_id from urls where user_id = $1`
 	var result []entities.URL
@@ -45,6 +46,7 @@ func (r Repository) GetAllURLsByUserID(ctx context.Context, userID string) ([]en
 	return result, nil
 }
 
+// GetFullURLByID
 func (r Repository) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
 	query := `select short_url, original_url, user_id, is_deleted from urls where short_url = $1`
 	var u entities.URL
@@ -68,6 +70,7 @@ func (r Repository) findShortURL(ctx context.Context, fullURL string) (string, e
 	return u.ShortURL, nil
 }
 
+// CreateShortURL
 func (r Repository) CreateShortURL(ctx context.Context, url entities.URL) (string, error) {
 
 	sqlAddRow := `INSERT INTO urls (user_id, original_url, short_url,is_deleted)
@@ -90,6 +93,7 @@ func (r Repository) CreateShortURL(ctx context.Context, url entities.URL) (strin
 	return url.ShortURL, nil
 }
 
+// CreateShortURLs
 func (r Repository) CreateShortURLs(ctx context.Context, urls []entities.URL) ([]entities.URL, error) {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
@@ -111,6 +115,7 @@ func (r Repository) CreateShortURLs(ctx context.Context, urls []entities.URL) ([
 	return urls, nil
 }
 
+// DeleteShortURLs
 func (r Repository) DeleteShortURLs(ctx context.Context, urls []string, userID string) error {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {

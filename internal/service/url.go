@@ -6,8 +6,11 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/entities"
 )
 
-const numberElement = 6
-const sizeDeleted = 50
+// Константы
+const (
+	numberElement = 6
+	sizeDeleted   = 50
+)
 
 // GetURLByID Получить оригинальную ссылку по shortURL
 func (s *TranslationServer) GetURLByID(ctx context.Context, shortURL string) (string, error) {
@@ -41,6 +44,7 @@ func (s *TranslationServer) CreateShortURL(ctx context.Context, url entities.URL
 	return shortURL, nil
 }
 
+// PingDB Проверка подключения к базе
 func (s *TranslationServer) PingDB(ctx context.Context) error {
 	return s.Repo.Ping(ctx)
 }

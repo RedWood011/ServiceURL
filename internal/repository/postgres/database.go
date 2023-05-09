@@ -19,6 +19,7 @@ type Repository struct {
 	DB *pgxpool.Pool
 }
 
+// NewDatabase ...
 func NewDatabase(ctx context.Context, dsn string, maxAttempts string) (db *Repository, err error) {
 	var pool *pgxpool.Pool
 
@@ -73,6 +74,7 @@ func (r *Repository) Ping(ctx context.Context) error {
 	return r.DB.Ping(ctx)
 }
 
+// SaveDone ...
 func (r *Repository) SaveDone() error {
 	r.DB.Close()
 	return nil
