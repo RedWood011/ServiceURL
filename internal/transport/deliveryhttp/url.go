@@ -15,6 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// cookie
 const cookieName usermiddleware.CookieType = "uuid"
 
 // URL Структура

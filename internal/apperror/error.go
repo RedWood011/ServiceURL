@@ -1,6 +1,7 @@
 // Package apperror предназначен для кастомных ошибок сервиса
 package apperror
 
+// Кастомные ошибки
 var (
 	ErrNotFound  = NewAppError(nil, "not found")
 	ErrNoContent = NewAppError(nil, "no content")
@@ -22,10 +23,12 @@ func NewAppError(err error, message string) *AppError {
 	}
 }
 
+// - Error
 func (e *AppError) Error() string {
 	return e.Message
 }
 
+// Unwrap
 func (e *AppError) Unwrap() error {
 	return e.Err
 }
