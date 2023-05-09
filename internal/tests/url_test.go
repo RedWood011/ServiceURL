@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func ExampleURL_TestPostBatchURLText() {
+func ExampleURL_PostBatchURLText() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -27,7 +27,7 @@ func ExampleURL_TestPostBatchURLText() {
 	rtr.Post("/", router.PostBatchURLText)
 }
 
-func Example_TestPostBatchSingleURLJSON() {
+func Example_PostBatchSingleURLJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -37,7 +37,7 @@ func Example_TestPostBatchSingleURLJSON() {
 	rtr.Post("/api/shorten", router.PostBatchSingleURLJSON)
 }
 
-func Example_TestPostBatchURLsJSON() {
+func Example_PostBatchURLsJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -47,7 +47,7 @@ func Example_TestPostBatchURLsJSON() {
 	rtr.Post("/api/shorten/batch", router.PostBatchURLsJSON)
 }
 
-func Example_TestGetURLByIDText() {
+func Example_GetURLByIDText() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -57,7 +57,7 @@ func Example_TestGetURLByIDText() {
 	rtr.Post("/{id}", router.GetURLByIDText)
 }
 
-func Example_TestGetUserURLsJSON() {
+func Example_GetUserURLsJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -94,6 +94,7 @@ func TestGetUserURLsJSON(t *testing.T) {
 		chiRouter.ServeHTTP(w, req)
 		require.Equal(t, http.StatusCreated, w.Code)
 		response := w.Result()
+		defer response.Body.Close()
 		cookies := response.Cookies()
 		for _, cookie := range cookies {
 			if cookie.Name == usermiddleware.CookieName {
@@ -374,6 +375,7 @@ func TestDeleteBatchURLs(t *testing.T) {
 		chiRouter.ServeHTTP(w, req)
 		require.Equal(t, http.StatusCreated, w.Code)
 		response := w.Result()
+		defer response.Body.Close()
 		var cook *http.Cookie
 		cookies := response.Cookies()
 		for _, cookie := range cookies {

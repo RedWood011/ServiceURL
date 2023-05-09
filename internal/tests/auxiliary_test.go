@@ -50,7 +50,7 @@ func createReqBody(t *testing.T, raw interface{}) *bytes.Buffer {
 	return bytes.NewBuffer(body)
 }
 func cleanup(r *postgres.Repository) error {
-	_, err := r.Db.Exec(context.Background(), "TRUNCATE TABLE urls")
+	_, err := r.DB.Exec(context.Background(), "TRUNCATE TABLE urls")
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,6 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 		err    error
 	)
 	cfg := &config.Config{
-		Port:     ":8080",
 		Address:  "http://localhost:8080",
 		FilePath: "",
 		KeyHash:  "7cdb395a-e63e-445f-b2c4-90a400438ee4",
@@ -74,11 +73,13 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 		NumWorkers:        5,
 		SizeBufWorker:     100,
 	}
+
 	if cfg.DatabaseDSN != "" {
 		db, err = postgres.NewDatabase(context.Background(), cfg.DatabaseDSN, cfg.CountRepetitionBD)
 	} else {
 		dbFile, err = memoryfile.NewFileMap(cfg.FilePath)
 	}
+
 	ctx := context.Background()
 	logger := slog.New(slog.NewTextHandler(os.Stderr))
 	if cfg.DatabaseDSN != "" {
@@ -90,9 +91,6 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 		return nil, nil, err
 	}
 	repo := repository.NewRepository(cfg.DatabaseDSN, db, dbFile)
-	if err != nil {
-		return nil, nil, err
-	}
 	workerPool := workers.New(cfg.NumWorkers, cfg.SizeBufWorker)
 
 	serv := service.New(repo, logger, workerPool, cfg.Address)

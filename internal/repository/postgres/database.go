@@ -15,7 +15,7 @@ import (
 )
 
 type Repository struct {
-	Db *pgxpool.Pool
+	DB *pgxpool.Pool
 }
 
 func NewDatabase(ctx context.Context, dsn string, maxAttempts string) (db *Repository, err error) {
@@ -46,7 +46,7 @@ func NewDatabase(ctx context.Context, dsn string, maxAttempts string) (db *Repos
 		return nil, fmt.Errorf("failed migrate database: %w", err)
 	}
 
-	return &Repository{Db: pool}, err
+	return &Repository{DB: pool}, err
 }
 
 func startMigration(dsn string) (bool, error) {
@@ -69,10 +69,10 @@ func startMigration(dsn string) (bool, error) {
 }
 
 func (r *Repository) Ping(ctx context.Context) error {
-	return r.Db.Ping(ctx)
+	return r.DB.Ping(ctx)
 }
 
 func (r *Repository) SaveDone() error {
-	r.Db.Close()
+	r.DB.Close()
 	return nil
 }
