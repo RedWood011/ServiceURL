@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Example_PostBatchURLText() {
+func ExamplePostBatchURLText() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -27,7 +27,7 @@ func Example_PostBatchURLText() {
 	rtr.Post("/", router.PostBatchURLText)
 }
 
-func Example_PostBatchSingleURLJSON() {
+func ExamplePostBatchSingleURLJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -37,7 +37,7 @@ func Example_PostBatchSingleURLJSON() {
 	rtr.Post("/api/shorten", router.PostBatchSingleURLJSON)
 }
 
-func Example_PostBatchURLsJSON() {
+func ExamplePostBatchURLsJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -47,7 +47,7 @@ func Example_PostBatchURLsJSON() {
 	rtr.Post("/api/shorten/batch", router.PostBatchURLsJSON)
 }
 
-func Example_GetURLByIDText() {
+func ExampleGetURLByIDText() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
@@ -57,7 +57,7 @@ func Example_GetURLByIDText() {
 	rtr.Post("/{id}", router.GetURLByIDText)
 }
 
-func Example_GetUserURLsJSON() {
+func ExampleGetUserURLsJSON() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
