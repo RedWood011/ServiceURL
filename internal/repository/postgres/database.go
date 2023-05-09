@@ -70,6 +70,7 @@ func startMigration(dsn string) (bool, error) {
 	return true, nil
 }
 
+// Ping ...
 func (r *Repository) Ping(ctx context.Context) error {
 	return r.DB.Ping(ctx)
 }

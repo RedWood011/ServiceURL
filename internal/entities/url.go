@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// URL ...
 type URL struct {
 	UserID        string
 	ShortURL      string
