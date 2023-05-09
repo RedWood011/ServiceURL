@@ -21,6 +21,7 @@ func NewRout(service service.Translation) *Router {
 	}
 }
 
+// NewRouter Создание маршрутизатора
 func NewRouter(r chi.Router, serv service.Translation, key string) chi.Router {
 	router := &Router{service: serv}
 	logger, _ := zap.NewProduction()

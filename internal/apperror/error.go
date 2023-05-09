@@ -8,6 +8,7 @@ var (
 	ErrGone      = NewAppError(nil, "error not available url")
 )
 
+// AppError Кастомная структура ошибок приложения
 type AppError struct {
 	Err     error  `json:"-"`
 	Message string `json:"Message,omitempty"`

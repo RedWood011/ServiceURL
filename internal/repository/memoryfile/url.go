@@ -7,6 +7,7 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/entities"
 )
 
+// CreateShortURL Запись данных.
 func (f *FileMap) CreateShortURL(_ context.Context, url entities.URL) (string, error) {
 	f.m.Lock()
 	defer f.m.Unlock()
@@ -43,6 +44,7 @@ func (f *FileMap) CreateShortURL(_ context.Context, url entities.URL) (string, e
 	return "", nil
 }
 
+// GetFullURLByID Получить оригинальную ссылку по shortURL
 func (f *FileMap) GetFullURLByID(_ context.Context, shortURL string) (res string, err error) {
 	f.m.Lock()
 	defer f.m.Unlock()

@@ -22,20 +22,24 @@ type URL struct {
 	ID      string
 }
 
+// PostBatchShortURLJSONBody Запрос
 type PostBatchShortURLJSONBody struct {
 	URLs []URL `json:"URLs"`
 }
 
+// PostBatchShortURLsJSONBody Запрос
 type PostBatchShortURLsJSONBody struct {
 	CorrelationID string `json:"correlation_id"`
 	FullURL       string `json:"original_url"`
 }
 
+// ResponseBatchShortURLsJSONBody Ответ на запрос
 type ResponseBatchShortURLsJSONBody struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
+// GetAllURLsUserID Ответ на запрос
 type GetAllURLsUserID struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`

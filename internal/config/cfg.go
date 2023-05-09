@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Config Конфигурация приложения
 type Config struct {
 	Port              string
 	Address           string

@@ -8,6 +8,7 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+// Translation Интерфейс взаимодействия с Repository
 type Translation interface {
 	GetURLByID(ctx context.Context, shortURL string) (string, error)
 	GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error)
@@ -17,6 +18,7 @@ type Translation interface {
 	DeleteShortURLs(ctx context.Context, urls []string, usedID string)
 }
 
+// TranslationServer Сервер
 type TranslationServer struct {
 	Repo    Storage
 	address string

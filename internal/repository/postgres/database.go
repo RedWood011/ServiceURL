@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
+// Repository ...
 type Repository struct {
 	DB *pgxpool.Pool
 }

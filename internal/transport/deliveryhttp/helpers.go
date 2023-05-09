@@ -8,19 +8,14 @@ import (
 	"net/http"
 )
 
+// APIError JSON ответ ошибки
 type APIError struct {
 	Message string `json:"message"`
 }
+
+// CreatedItem Структура ответа
 type CreatedItem struct {
 	ID string `json:"result"`
-}
-
-func batchCreatedItemsFromService(createdIDs []string) []CreatedItem {
-	batchItems := make([]CreatedItem, 0, len(createdIDs))
-	for _, value := range createdIDs {
-		batchItems = append(batchItems, CreatedItem{ID: value})
-	}
-	return batchItems
 }
 
 func batchCreatedItemFromService(createdID string) CreatedItem {

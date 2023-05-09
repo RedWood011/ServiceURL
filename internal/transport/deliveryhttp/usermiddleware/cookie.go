@@ -17,6 +17,7 @@ type CookieType string
 const CookieName = "uuid"
 const timeSecondLive = 900
 
+// Cookie Проверка куки
 func Cookie(key string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
