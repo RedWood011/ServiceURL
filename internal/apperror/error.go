@@ -1,3 +1,4 @@
+// Package apperror предназначен для кастомных ошибок сервиса
 package apperror
 
 var (

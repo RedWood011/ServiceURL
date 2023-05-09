@@ -17,6 +17,7 @@ import (
 
 const cookieName usermiddleware.CookieType = "uuid"
 
+// URL Структура
 type URL struct {
 	FullURL string `json:"url"`
 	ID      string

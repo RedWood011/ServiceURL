@@ -1,3 +1,4 @@
+// Package workers Пакет для конкурентной работы с потоками
 package workers
 
 import (
@@ -7,6 +8,7 @@ import (
 	"sync"
 )
 
+// WorkerPool Пул потоков c функцией исполнения
 type WorkerPool struct {
 	numWorkers int
 	input      chan func(ctx context.Context) error

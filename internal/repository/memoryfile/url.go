@@ -1,3 +1,4 @@
+// Package memoryfile Запись данных в файл или память.
 package memoryfile
 
 import (

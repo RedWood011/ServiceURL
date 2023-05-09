@@ -1,3 +1,4 @@
+// Package entities Нужен для передачи бизнес-сущности
 package entities
 
 import (
