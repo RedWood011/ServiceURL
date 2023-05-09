@@ -5,7 +5,7 @@ services:
     container_name: test_url
 
     ports:
-      - "5436:5432"
+      - "5438:5432"
 
     environment:
       - POSTGRES_PASSWORD=qwerty

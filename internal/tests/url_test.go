@@ -3,187 +3,481 @@ package tests
 import (
 	"bytes"
 	"context"
-	"io"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp/usermiddleware"
 	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestTextCreateURLOk(t *testing.T) {
-	// initial preparations
-	r, err := initTestEnv()
-	assert.NoError(t, err)
-	fullURL := "https://www.google.com/?safe=active&ssui=on"
-	uuid := "ff8f5d2a-56c1-4c24-b0e6-44ed243f5d4d"
-	URL := createTextShortURL(t, r, fullURL, uuid)
+func ExampleURL_TestPostBatchURLText() {
+	router, err := initTestEnv()
+	if err != nil {
+		return
+	}
 
-	adr, err := url.Parse(URL)
-	assert.NoError(t, err)
-	id := strings.ReplaceAll(adr.Path, "/", "")
-
-	actual := getFullURLByID(t, r, id, uuid)
-	// get result
-
-	assert.Equal(t, fullURL, actual)
+	rtr := chi.NewRouter()
+	rtr.Post("/", router.PostBatchURLText)
 }
 
-func TestJSONCreateSingleURLOk(t *testing.T) {
-	// initial preparations
-	r, err := initTestEnv()
-	assert.NoError(t, err)
+func Example_TestPostBatchSingleURLJSON() {
+	router, err := initTestEnv()
+	if err != nil {
+		return
+	}
 
-	fullURL := "https://www.google.com/?safe=active&ssui=on"
-	uuid := "ff8f5d2a-56c1-4c24-b0e6-44ed243f5d4d"
-
-	createdShortURL := createTextShortURL(t, r, fullURL, uuid)
-
-	adr, err := url.Parse(createdShortURL)
-	assert.NoError(t, err)
-
-	id := strings.ReplaceAll(adr.Path, "/", "")
-	// get result
-	actual := getFullURLByID(t, r, id, uuid)
-
-	assert.Equal(t, fullURL, actual)
+	rtr := chi.NewRouter()
+	rtr.Post("/api/shorten", router.PostBatchSingleURLJSON)
 }
 
-func TestGetAllURLsByUserID(t *testing.T) {
-	r, err := initTestEnv()
-	assert.NoError(t, err)
-	uuid := "ff8f5d2a-56c1-4c24-b0e6-44ed243f5d4d"
-	URLs := []string{"https://www.google.com/?safe=active&ssui=on", "www.vk.com"}
+func Example_TestPostBatchURLsJSON() {
+	router, err := initTestEnv()
+	if err != nil {
+		return
+	}
 
-	getAllURLsUserID := func(create func(t *testing.T, router *deliveryhttp.Router, fullURL, uuid string) string, t *testing.T,
-		router *deliveryhttp.Router, fullURL, uuid string) deliveryhttp.GetAllURLsUserID {
-		shortURL := create(t, r, fullURL, uuid)
-		return deliveryhttp.GetAllURLsUserID{
-			ShortURL:    shortURL,
-			OriginalURL: fullURL,
+	rtr := chi.NewRouter()
+	rtr.Post("/api/shorten/batch", router.PostBatchURLsJSON)
+}
+
+func Example_TestGetURLByIDText() {
+	router, err := initTestEnv()
+	if err != nil {
+		return
+	}
+
+	rtr := chi.NewRouter()
+	rtr.Post("/{id}", router.GetURLByIDText)
+}
+
+func Example_TestGetUserURLsJSON() {
+	router, err := initTestEnv()
+	if err != nil {
+		return
+	}
+
+	rtr := chi.NewRouter()
+	rtr.Get("/api/user/urls", router.GetUserURLsJSON)
+}
+
+func TestGetUserURLsJSON(t *testing.T) {
+	chiRouter, workerPool, err := initTestServer()
+	require.NoError(t, err)
+	go func() {
+		workerPool.Run(context.Background())
+	}()
+
+	getCookieByCreateURLs := func(t *testing.T) *http.Cookie {
+		body := []deliveryhttp.PostBatchShortURLsJSONBody{
+			{
+				CorrelationID: "e6ae8f2c-8596-4ca2-81d4-17daa467039f",
+				FullURL:       "https://www.yandex.ru"},
+			{
+				CorrelationID: "d424040b-9b16-44b5-be0f-e78968674e9d",
+				FullURL:       "https://www.ya.сom",
+			},
+			{
+				CorrelationID: "78022ed0-badc-4e2d-8e5d-8daa7467826e",
+				FullURL:       "https://www.jira.com",
+			},
 		}
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", createReqBody(t, body))
+		chiRouter.ServeHTTP(w, req)
+		require.Equal(t, http.StatusCreated, w.Code)
+		response := w.Result()
+		cookies := response.Cookies()
+		for _, cookie := range cookies {
+			if cookie.Name == usermiddleware.CookieName {
+				return cookie
+			}
+		}
+		return nil
 	}
 
-	getWant := func(URLs []string) []deliveryhttp.GetAllURLsUserID {
-		expected := make([]deliveryhttp.GetAllURLsUserID, 0, 2)
-		expected = append(expected, getAllURLsUserID(createJSONSingleShortURL, t, r, URLs[0], uuid))
-		expected = append(expected, getAllURLsUserID(createTextShortURL, t, r, URLs[1], uuid))
-		return expected
+	type expected struct {
+		code        int
+		contentType string
 	}
 
-	testTable := []struct {
-		name      string
-		want      []deliveryhttp.GetAllURLsUserID
-		getUserID string
-		code      int
+	tests := []struct {
+		name     string
+		cookie   *http.Cookie
+		expected expected
 	}{
 		{
-			name:      "ExistAllURLsUserID",
-			want:      getWant(URLs),
-			getUserID: uuid,
-			code:      http.StatusOK,
+			name:   "Received all user links successfully",
+			cookie: getCookieByCreateURLs(t),
+			expected: expected{
+				code:        http.StatusOK,
+				contentType: `application/json`,
+			},
 		},
 		{
-			name:      "ErrNoContent",
-			want:      []deliveryhttp.GetAllURLsUserID{},
-			getUserID: "a144253e-0192-4dbe-96b2-bd80ebe45386",
-			code:      http.StatusNoContent,
+			name:   "User does not have shortened links",
+			cookie: &http.Cookie{},
+			expected: expected{
+				code:        http.StatusNoContent,
+				contentType: `application/json`,
+			},
 		},
 	}
-	for _, testCase := range testTable {
-		t.Run(testCase.name, func(t *testing.T) {
-			URLs, Code := getAllURLsByUserID(t, r, testCase.getUserID)
-			assert.Equal(t, URLs, testCase.want)
-			assert.Equal(t, Code, testCase.code)
+
+	time.Sleep(3 * time.Second)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
+			req.AddCookie(test.cookie)
+			chiRouter.ServeHTTP(w, req)
+			require.Equal(t, test.expected.code, w.Code)
+			require.Equal(t, test.expected.contentType, w.Header().Get("Content-Type"))
+		})
+	}
+}
+
+func TestGetURLByIDText(t *testing.T) {
+	chiRouter, _, err := initTestServer()
+	require.NoError(t, err)
+	link := "https://www.gmail.com"
+
+	createShortURL := func(t *testing.T, link string) string {
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(link))
+		chiRouter.ServeHTTP(w, req)
+		require.Equal(t, http.StatusCreated, w.Code)
+		return w.Body.String()
+	}
+
+	type expected struct {
+		code     int
+		Location string
+		body     string
+	}
+	tests := []struct {
+		name     string
+		shortURL string
+		expected expected
+	}{
+		{
+			name:     "Get original URL correctly",
+			shortURL: createShortURL(t, link),
+			expected: expected{
+				code:     http.StatusTemporaryRedirect,
+				Location: "Location",
+				body:     link,
+			},
+		},
+		{
+			name:     "Get original InternalServerError",
+			shortURL: "/12345",
+			expected: expected{
+				code:     http.StatusInternalServerError,
+				Location: "",
+				body:     "",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, test.shortURL, nil)
+			chiRouter.ServeHTTP(w, req)
+			require.Equal(t, test.expected.code, w.Code)
+			require.Equal(t, test.expected.body, w.Header().Get("Location"))
+		})
+	}
+}
+
+func TestPostBatchURLText(t *testing.T) {
+	chiRouter, _, err := initTestServer()
+	require.NoError(t, err)
+
+	type expected struct {
+		code        int
+		contentType string
+	}
+	tests := []struct {
+		name     string
+		body     string
+		expected expected
+	}{
+		{
+			name: "Post Correct URL",
+			body: "https://www.google.com",
+			expected: expected{
+				code:        http.StatusCreated,
+				contentType: "text/plain",
+			},
+		},
+		{
+			name: "URL is exist in database",
+			body: "https://www.google.com",
+			expected: expected{
+				code:        http.StatusConflict,
+				contentType: "text/plain",
+			},
+		},
+		{
+			name: "Empty URL body",
+			body: "",
+			expected: expected{
+				code:        http.StatusBadRequest,
+				contentType: "text/plain; charset=utf-8",
+			},
+		},
+	}
+	cookie := usermiddleware.CreateValidCookie()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(test.body))
+			req.AddCookie(cookie)
+			chiRouter.ServeHTTP(w, req)
+			require.Equal(t, test.expected.code, w.Code)
+			require.Equal(t, test.expected.contentType, w.Header().Get("Content-Type"))
 		})
 	}
 
 }
 
-func createJSONSingleShortURL(t *testing.T, router *deliveryhttp.Router, url, uuid string) string {
-	expected := deliveryhttp.URL{FullURL: url}
-
-	r, w := newReqResp(http.MethodPost, createReqBody(t, expected))
-
-	ctx := r.Context()
-	ctx = context.WithValue(ctx, usermiddleware.CookieType("uuid"), uuid)
-
-	r = r.WithContext(ctx)
-
-	router.PostBatchSingleURLJSON(w, r)
-
-	require.Equal(t, http.StatusCreated, w.Code)
-	require.Equal(t, w.Header().Get("Content-Type"), "application/json")
-
-	var createdItem deliveryhttp.CreatedItem
-
-	parseRespBody(t, w.Body.Bytes(), &createdItem)
-	require.NotEqual(t, createdItem.ID, "")
-
-	return createdItem.ID
-}
-
-func createTextShortURL(t *testing.T, router *deliveryhttp.Router, fullURL, uuid string) string {
-	// request execution
-
-	r := httptest.NewRequest(http.MethodPost, "/anything", bytes.NewBuffer([]byte(fullURL)))
+func TestPostBatchSingleURLJSON(t *testing.T) {
+	chiRouter, _, err := initTestServer()
+	require.NoError(t, err)
+	link := "https://www.gmail.com"
+	existURL := deliveryhttp.URL{FullURL: link}
+	type expected struct {
+		code        int
+		contentType string
+	}
+	tests := []struct {
+		name     string
+		body     deliveryhttp.URL
+		expected expected
+	}{
+		{
+			name: "Post Correct URL",
+			body: deliveryhttp.URL{
+				FullURL: "https://www.yandex.ru",
+			},
+			expected: expected{
+				code:        http.StatusCreated,
+				contentType: `application/json`,
+			},
+		},
+		{
+			name: "URL is exist in database",
+			body: deliveryhttp.URL{
+				FullURL: link,
+			},
+			expected: expected{
+				code:        http.StatusConflict,
+				contentType: `application/json`,
+			},
+		},
+	}
 	w := httptest.NewRecorder()
-
-	rctx := chi.NewRouteContext()
-
-	key := usermiddleware.CookieType("uuid")
-
-	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-	ctx := r.Context()
-	ctx = context.WithValue(ctx, key, uuid)
-	r = r.WithContext(ctx)
-
-	router.PostBatchURLText(w, r)
-
-	require.Equal(t, http.StatusCreated, w.Code)
-	require.Equal(t, w.Header().Get("Content-Type"), "text/plain")
-	// get results
-
-	var createdItem string
-	body, err := io.ReadAll(w.Body)
-	assert.NoError(t, err)
-	createdItem = string(body)
-	assert.NoError(t, r.Body.Close())
-
-	return createdItem
+	req := httptest.NewRequest(http.MethodPost, "/api/shorten", createReqBody(t, existURL))
+	cookie := usermiddleware.CreateValidCookie()
+	req.AddCookie(cookie)
+	chiRouter.ServeHTTP(w, req)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			req = httptest.NewRequest(http.MethodPost, "/api/shorten", createReqBody(t, test.body))
+			req.AddCookie(cookie)
+			chiRouter.ServeHTTP(w, req)
+			require.Equal(t, test.expected.code, w.Code)
+			require.Equal(t, test.expected.contentType, w.Header().Get("Content-Type"))
+		})
+	}
 }
 
-func getFullURLByID(t *testing.T, router *deliveryhttp.Router, shortURL, uuid string) string {
-	r, w := newReqResp(http.MethodGet, nil)
-	ctx := r.Context()
-	ctx = context.WithValue(ctx, usermiddleware.CookieType("uuid"), uuid)
-	r = r.WithContext(ctx)
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("id", shortURL)
-	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+func TestPostBatchURLsJSON(t *testing.T) {
+	chiRouter, _, err := initTestServer()
+	require.NoError(t, err)
 
-	router.GetURLByIDText(w, r)
-
-	require.Equal(t, 307, w.Code)
-	fullURL := w.Header().Get("Location")
-	return fullURL
+	type expected struct {
+		code        int
+		contentType string
+	}
+	tests := []struct {
+		name     string
+		body     []deliveryhttp.PostBatchShortURLsJSONBody
+		expected expected
+	}{
+		{
+			name: "Post batch many URL success",
+			body: []deliveryhttp.PostBatchShortURLsJSONBody{
+				{
+					CorrelationID: "e6ae8f2c-8596-4ca2-81d4-17daa467039f",
+					FullURL:       "https://www.yandex.ru"},
+				{
+					CorrelationID: "d424040b-9b16-44b5-be0f-e78968674e9d",
+					FullURL:       "https://www.ya.сom",
+				},
+				{
+					CorrelationID: "78022ed0-badc-4e2d-8e5d-8daa7467826e",
+					FullURL:       "https://www.jira.com",
+				},
+			},
+			expected: expected{
+				code:        http.StatusCreated,
+				contentType: `application/json`,
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", createReqBody(t, test.body))
+			chiRouter.ServeHTTP(w, req)
+			require.Equal(t, test.expected.code, w.Code)
+			require.Equal(t, test.expected.contentType, w.Header().Get("Content-Type"))
+		})
+	}
 }
 
-func getAllURLsByUserID(t *testing.T, router *deliveryhttp.Router, uuid string) ([]deliveryhttp.GetAllURLsUserID, int) {
-	r, w := newReqResp(http.MethodGet, nil)
-	ctx := r.Context()
-	ctx = context.WithValue(ctx, usermiddleware.CookieType("uuid"), uuid)
-	r = r.WithContext(ctx)
+func TestDeleteBatchURLs(t *testing.T) {
+	chiRouter, workerPool, err := initTestServer()
+	require.NoError(t, err)
+	go func() {
+		workerPool.Run(context.Background())
+	}()
 
-	router.GetUserURLsJSON(w, r)
-	require.Equal(t, w.Header().Get("Content-Type"), "application/json")
-	var createdItems []deliveryhttp.GetAllURLsUserID
-	parseRespBody(t, w.Body.Bytes(), &createdItems)
-	return createdItems, w.Code
+	getCreatedShortURls := func(t *testing.T) (string, []string, *http.Cookie) {
+		body := []deliveryhttp.PostBatchShortURLsJSONBody{
+			{
+				CorrelationID: "e6ae8f2c-8596-4ca2-81d4-17daa467039f",
+				FullURL:       "https://www.yandex.ru"},
+			{
+				CorrelationID: "d424040b-9b16-44b5-be0f-e78968674e9d",
+				FullURL:       "https://www.ya.сom",
+			},
+			{
+				CorrelationID: "78022ed0-badc-4e2d-8e5d-8daa7467826e",
+				FullURL:       "https://www.jira.com",
+			},
+		}
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", createReqBody(t, body))
+		chiRouter.ServeHTTP(w, req)
+		require.Equal(t, http.StatusCreated, w.Code)
+		response := w.Result()
+		var cook *http.Cookie
+		cookies := response.Cookies()
+		for _, cookie := range cookies {
+			if cookie.Name == usermiddleware.CookieName {
+				cook = cookie
+			}
+		}
+
+		var object []deliveryhttp.ResponseBatchShortURLsJSONBody
+		parseRespBody(t, w.Body.Bytes(), &object)
+		var shortURLs string
+		shorts := make([]string, 0, len(object))
+		for _, v := range object {
+			if shortURLs == "" {
+				shortURLs += fmt.Sprintf("[\"%s\"", v.ShortURL)
+				shorts = append(shorts, v.ShortURL)
+			} else {
+				shortURLs += fmt.Sprintf(",\"%s\"", v.ShortURL)
+				shorts = append(shorts, v.ShortURL)
+			}
+		}
+		shortURLs += "]"
+
+		return shortURLs, shorts, cook
+	}
+
+	shortURLs, shorts, cookie := getCreatedShortURls(t)
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodDelete, "/api/user/urls", strings.NewReader(shortURLs))
+	req.AddCookie(cookie)
+	chiRouter.ServeHTTP(w, req)
+	require.Equal(t, http.StatusAccepted, w.Code)
+
+	time.Sleep(3 * time.Second)
+
+	for _, short := range shorts {
+		req = httptest.NewRequest(http.MethodGet, short, nil)
+		w = httptest.NewRecorder()
+		chiRouter.ServeHTTP(w, req)
+		require.Equal(t, http.StatusGone, w.Code)
+	}
+
+}
+
+func TestPingDB(t *testing.T) {
+	chiRouter, _, err := initTestServer()
+	require.NoError(t, err)
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+	chiRouter.ServeHTTP(w, req)
+	require.Equal(t, http.StatusOK, w.Code)
+
+}
+
+func BenchmarkPostBatchURLsJSON(b *testing.B) {
+	b.Run("", func(b *testing.B) {
+		chiRouter, _, _ := initTestServer()
+		for i := 0; i < b.N; i++ {
+			data := []deliveryhttp.PostBatchShortURLsJSONBody{
+				{
+					CorrelationID: "e6ae8f2c-8596-4ca2-81d4-17daa467039f",
+					FullURL:       "https://www.yandex.ru"},
+				{
+					CorrelationID: "d424040b-9b16-44b5-be0f-e78968674e9d",
+					FullURL:       "https://www.ya.сom",
+				},
+				{
+					CorrelationID: "78022ed0-badc-4e2d-8e5d-8daa7467826e",
+					FullURL:       "https://www.jira.com",
+				},
+			}
+			body, _ := json.Marshal(data)
+			res := bytes.NewBuffer(body)
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", res)
+			chiRouter.ServeHTTP(w, req)
+		}
+	})
+}
+
+func BenchmarkPostBatchSingleURLJSON(b *testing.B) {
+	b.Run("", func(b *testing.B) {
+		chiRouter, _, _ := initTestServer()
+		for i := 0; i < b.N; i++ {
+
+			link := "https://www.gmail.com"
+			existURL := deliveryhttp.URL{FullURL: link}
+			body, _ := json.Marshal(existURL)
+			res := bytes.NewBuffer(body)
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/api/shorten", res)
+			chiRouter.ServeHTTP(w, req)
+		}
+	})
+}
+
+func BenchmarkPostBatchURLText(b *testing.B) {
+	b.Run("", func(b *testing.B) {
+		chiRouter, _, _ := initTestServer()
+		for i := 0; i < b.N; i++ {
+			link := "https://www.gmail.com"
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(link))
+			chiRouter.ServeHTTP(w, req)
+		}
+	})
 }

@@ -14,15 +14,15 @@ import (
 
 type CookieType string
 
-const cookieName = "uuid"
+const CookieName = "uuid"
 const timeSecondLive = 900
 
 func Cookie(key string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			var nameCookie CookieType = cookieName
+			var nameCookie CookieType = CookieName
 
-			cookie, err := r.Cookie(cookieName)
+			cookie, err := r.Cookie(CookieName)
 			if err != nil {
 				uid := setUUIDCookie(w, uuid.NewString(), key)
 				ctx := r.Context()
@@ -78,9 +78,20 @@ func setUUIDCookie(w http.ResponseWriter, uid string, key string) string {
 	uuid := fmt.Sprintf("%s:%s", uid, CalculateHash(uid, key))
 
 	http.SetCookie(w, &http.Cookie{
-		Name:   cookieName,
+		Name:   CookieName,
 		Value:  uuid,
 		MaxAge: timeSecondLive,
 	})
 	return uid
+}
+
+// TODO вподумать над нормальным механизмом передачи ключа
+func CreateValidCookie() *http.Cookie {
+	id := uuid.NewString()
+	uuid := fmt.Sprintf("%s:%s", id, CalculateHash(id, "7cdb395a-e63e-445f-b2c4-90a400438ee4"))
+	return &http.Cookie{
+		Name:   CookieName,
+		Value:  uuid,
+		MaxAge: timeSecondLive,
+	}
 }

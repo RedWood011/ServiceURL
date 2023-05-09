@@ -6,6 +6,7 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/entities"
 )
 
+// Storage - интерфейс для взаимодействия с репозиторием.
 type Storage interface {
 	GetFullURLByID(ctx context.Context, shortURL string) (res string, err error)
 	GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error)

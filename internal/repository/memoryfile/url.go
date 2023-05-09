@@ -55,7 +55,7 @@ func (f *FileMap) GetFullURLByID(_ context.Context, shortURL string) (res string
 		return fullURL, nil
 	}
 
-	return "", apperror.ErrNotFound
+	return "", apperror.ErrDataBase
 }
 
 func (f *FileMap) GetAllURLsByUserID(_ context.Context, userID string) ([]entities.URL, error) {
