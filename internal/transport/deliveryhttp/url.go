@@ -15,7 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// cookie
+// cookieName Имя куки
 const cookieName usermiddleware.CookieType = "uuid"
 
 // URL Структура
@@ -47,7 +47,7 @@ type GetAllURLsUserID struct {
 	OriginalURL string `json:"original_url"`
 }
 
-// URLsByUserIDFromService ...
+// URLsByUserIDFromService fromService...
 func URLsByUserIDFromService(urls []entities.URL) []GetAllURLsUserID {
 	res := make([]GetAllURLsUserID, 0, len(urls))
 
@@ -60,8 +60,8 @@ func URLsByUserIDFromService(urls []entities.URL) []GetAllURLsUserID {
 	return res
 }
 
-// ResponseBatchShortURLsJSONBodyFromService ...
-func ResponseBatchShortURLsJSONBodyFromService(urls []entities.URL) []ResponseBatchShortURLsJSONBody {
+// responseBatchShortURLsJSONBodyFromService fromService...
+func responseBatchShortURLsJSONBodyFromService(urls []entities.URL) []ResponseBatchShortURLsJSONBody {
 	res := make([]ResponseBatchShortURLsJSONBody, 0, len(urls))
 
 	for _, url := range urls {
@@ -308,7 +308,7 @@ func (r *Router) PostBatchURLsJSON(writer http.ResponseWriter, request *http.Req
 			}
 		}
 	}
-	writeSuccessful(ctx, writer, http.StatusCreated, ResponseBatchShortURLsJSONBodyFromService(createdIDs))
+	writeSuccessful(ctx, writer, http.StatusCreated, responseBatchShortURLsJSONBodyFromService(createdIDs))
 }
 
 // PingDB - проверка соединения с базой данных.
