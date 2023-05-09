@@ -15,8 +15,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// cookieName Имя куки
-const cookieName usermiddleware.CookieType = "uuid"
+// cookieName константа
+const (
+	cookieName usermiddleware.CookieType = "uuid"
+)
 
 // URL Структура
 type URL struct {
@@ -35,19 +37,19 @@ type PostBatchShortURLsJSONBody struct {
 	FullURL       string `json:"original_url"`
 }
 
-// ResponseBatchShortURLsJSONBody Ответ на запрос
+// ResponseBatchShortURLsJSONBody
 type ResponseBatchShortURLsJSONBody struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
-// GetAllURLsUserID Ответ на запрос
+// GetAllURLsUserID
 type GetAllURLsUserID struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
 
-// URLsByUserIDFromService fromService...
+// URLsByUserIDFromService
 func URLsByUserIDFromService(urls []entities.URL) []GetAllURLsUserID {
 	res := make([]GetAllURLsUserID, 0, len(urls))
 
@@ -60,7 +62,6 @@ func URLsByUserIDFromService(urls []entities.URL) []GetAllURLsUserID {
 	return res
 }
 
-// responseBatchShortURLsJSONBodyFromService fromService...
 func responseBatchShortURLsJSONBodyFromService(urls []entities.URL) []ResponseBatchShortURLsJSONBody {
 	res := make([]ResponseBatchShortURLsJSONBody, 0, len(urls))
 
@@ -167,7 +168,7 @@ func (r *Router) GetURLByIDText(writer http.ResponseWriter, request *http.Reques
 }
 
 // PostBatchURLText - создание укороченной ссылки.
-// Формат запроса - строка с URL (plain text).
+// Формат запроса - строка с URL
 // При успешном создании код ответа 201, а так же в ответе будет укороченная ссылка.
 // В случае ошибки в формате запроса - код ответа 400.
 // В случае дубля оригинальной ссылки - код ответа 409.
