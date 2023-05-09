@@ -7,7 +7,7 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/entities"
 )
 
-func (f *FileMap) CreateShortURL(ctx context.Context, url entities.URL) (string, error) {
+func (f *FileMap) CreateShortURL(_ context.Context, url entities.URL) (string, error) {
 	f.m.Lock()
 	defer f.m.Unlock()
 	// проверка, что не существует такого ID
@@ -43,9 +43,13 @@ func (f *FileMap) CreateShortURL(ctx context.Context, url entities.URL) (string,
 	return "", nil
 }
 
-func (f *FileMap) GetFullURLByID(ctx context.Context, shortURL string) (res string, err error) {
+func (f *FileMap) GetFullURLByID(_ context.Context, shortURL string) (res string, err error) {
 	f.m.Lock()
 	defer f.m.Unlock()
+
+	if f.shortURLByIsDeleted[shortURL] {
+		return "", apperror.ErrGone
+	}
 
 	if fullURL, ok := f.LongByShortURL[shortURL]; ok {
 		return fullURL, nil
@@ -54,7 +58,7 @@ func (f *FileMap) GetFullURLByID(ctx context.Context, shortURL string) (res stri
 	return "", apperror.ErrNotFound
 }
 
-func (f *FileMap) GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error) {
+func (f *FileMap) GetAllURLsByUserID(_ context.Context, userID string) ([]entities.URL, error) {
 	existData, ok := f.cacheShortURL[userID]
 	if !ok {
 		return nil, apperror.ErrNoContent
@@ -104,5 +108,14 @@ func (f *FileMap) rollback(urls []entities.URL) {
 		f.cacheLongURL[url.UserID] = exitLongURL
 		f.LongByShortURL = existLongByShort
 	}
+}
 
+func (f *FileMap) DeleteShortURLs(_ context.Context, urls []string, _ string) error {
+	f.m.Lock()
+	defer f.m.Unlock()
+	for _, short := range urls {
+		f.shortURLByIsDeleted[short] = true
+	}
+
+	return nil
 }

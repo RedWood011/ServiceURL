@@ -7,6 +7,7 @@ import (
 )
 
 const numberElement = 6
+const sizeDeleted = 50
 
 func (s *TranslationServer) GetURLByID(ctx context.Context, shortURL string) (string, error) {
 	return s.Repo.GetFullURLByID(ctx, shortURL)
@@ -55,4 +56,40 @@ func (s *TranslationServer) CreateShortURLs(ctx context.Context, urls []entities
 	}
 
 	return createURLs, err
+}
+
+func (s *TranslationServer) DeleteShortURLs(ctx context.Context, urls []string, userID string) {
+	if ctx.Err() != nil {
+		return
+	}
+	batchDeleted := splitURLs(urls, sizeDeleted)
+	for _, urlsDeleted := range batchDeleted {
+		s.wp.Add(func(ctx context.Context) error {
+			err := s.Repo.DeleteShortURLs(ctx, urlsDeleted, userID)
+			return err
+		})
+	}
+}
+
+func splitURLs(urls []string, size int) [][]string {
+	res := make([][]string, 0, len(urls)/size+1)
+	url := make([]string, 0, size)
+	count := 0
+	for i := 0; i < len(urls); i++ {
+		if count < size {
+			url = append(url, urls[i])
+			count++
+		}
+
+		if count == size {
+			res = append(res, url)
+			url = nil
+			count = 0
+		}
+
+		if i == len(urls)-1 && count < size && count != 0 {
+			res = append(res, url)
+		}
+	}
+	return res
 }
