@@ -1,4 +1,4 @@
-package tests
+package deliveryhttp
 
 import (
 	"bytes"
@@ -12,13 +12,12 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/repository/memoryfile"
 	"github.com/RedWood011/ServiceURL/internal/repository/postgres"
 	"github.com/RedWood011/ServiceURL/internal/service"
-	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
 	"github.com/RedWood011/ServiceURL/internal/workers"
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/exp/slog"
 )
 
-func initTestEnv() (*deliveryhttp.Router, error) {
+func initTestEnv() (*Router, error) {
 	cfg := &config.Config{
 		Address:  "http://localhost:8080/",
 		FilePath: "",
@@ -38,7 +37,7 @@ func initTestEnv() (*deliveryhttp.Router, error) {
 	logger := slog.New(slog.NewTextHandler(os.Stderr))
 	sv := service.New(repo, logger, &worker, cfg.Address)
 
-	router := deliveryhttp.NewRout(sv)
+	router := NewRout(sv)
 	return router, err
 }
 
@@ -88,7 +87,7 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 	workerPool := workers.New(cfg.NumWorkers, cfg.SizeBufWorker)
 
 	serv := service.New(repo, logger, workerPool, cfg.Address)
-	chiRouter := deliveryhttp.NewRouter(chi.NewRouter(), serv, cfg.KeyHash)
+	chiRouter := NewRouter(chi.NewRouter(), serv, cfg.KeyHash)
 	if cfg.DatabaseDSN != "" {
 		cleanup(db)
 	}

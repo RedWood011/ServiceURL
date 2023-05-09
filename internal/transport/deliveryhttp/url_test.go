@@ -1,9 +1,7 @@
-package tests
+package deliveryhttp
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp/usermiddleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
@@ -75,7 +72,7 @@ func TestGetUserURLsJSON(t *testing.T) {
 	}()
 
 	getCookieByCreateURLs := func(t *testing.T) *http.Cookie {
-		body := []deliveryhttp.PostBatchShortURLsJSONBody{
+		body := []PostBatchShortURLsJSONBody{
 			{
 				CorrelationID: "e6ae8f2c-8596-4ca2-81d4-17daa467039f",
 				FullURL:       "https://www.yandex.ru"},
@@ -255,19 +252,19 @@ func TestPostBatchSingleURLJSON(t *testing.T) {
 	chiRouter, _, err := initTestServer()
 	require.NoError(t, err)
 	link := "https://www.gmail.com"
-	existURL := deliveryhttp.URL{FullURL: link}
+	existURL := URL{FullURL: link}
 	type expected struct {
 		code        int
 		contentType string
 	}
 	tests := []struct {
 		name     string
-		body     deliveryhttp.URL
+		body     URL
 		expected expected
 	}{
 		{
 			name: "Post Correct URL",
-			body: deliveryhttp.URL{
+			body: URL{
 				FullURL: "https://www.yandex.ru",
 			},
 			expected: expected{
@@ -277,7 +274,7 @@ func TestPostBatchSingleURLJSON(t *testing.T) {
 		},
 		{
 			name: "URL is exist in database",
-			body: deliveryhttp.URL{
+			body: URL{
 				FullURL: link,
 			},
 			expected: expected{
@@ -313,12 +310,12 @@ func TestPostBatchURLsJSON(t *testing.T) {
 	}
 	tests := []struct {
 		name     string
-		body     []deliveryhttp.PostBatchShortURLsJSONBody
+		body     []PostBatchShortURLsJSONBody
 		expected expected
 	}{
 		{
 			name: "Post batch many URL success",
-			body: []deliveryhttp.PostBatchShortURLsJSONBody{
+			body: []PostBatchShortURLsJSONBody{
 				{
 					CorrelationID: "e6ae8f2c-8596-4ca2-81d4-17daa467039f",
 					FullURL:       "https://www.yandex.ru"},
@@ -356,7 +353,7 @@ func TestDeleteBatchURLs(t *testing.T) {
 	}()
 
 	getCreatedShortURls := func(t *testing.T) (string, []string, *http.Cookie) {
-		body := []deliveryhttp.PostBatchShortURLsJSONBody{
+		body := []PostBatchShortURLsJSONBody{
 			{
 				CorrelationID: "e6ae8f2c-8596-4ca2-81d4-17daa467039f",
 				FullURL:       "https://www.yandex.ru"},
@@ -384,7 +381,7 @@ func TestDeleteBatchURLs(t *testing.T) {
 			}
 		}
 
-		var object []deliveryhttp.ResponseBatchShortURLsJSONBody
+		var object []ResponseBatchShortURLsJSONBody
 		parseRespBody(t, w.Body.Bytes(), &object)
 		var shortURLs string
 		shorts := make([]string, 0, len(object))
@@ -428,58 +425,4 @@ func TestPingDB(t *testing.T) {
 	chiRouter.ServeHTTP(w, req)
 	require.Equal(t, http.StatusOK, w.Code)
 
-}
-
-func BenchmarkPostBatchURLsJSON(b *testing.B) {
-	b.Run("", func(b *testing.B) {
-		chiRouter, _, _ := initTestServer()
-		for i := 0; i < b.N; i++ {
-			data := []deliveryhttp.PostBatchShortURLsJSONBody{
-				{
-					CorrelationID: "e6ae8f2c-8596-4ca2-81d4-17daa467039f",
-					FullURL:       "https://www.yandex.ru"},
-				{
-					CorrelationID: "d424040b-9b16-44b5-be0f-e78968674e9d",
-					FullURL:       "https://www.ya.сom",
-				},
-				{
-					CorrelationID: "78022ed0-badc-4e2d-8e5d-8daa7467826e",
-					FullURL:       "https://www.jira.com",
-				},
-			}
-			body, _ := json.Marshal(data)
-			res := bytes.NewBuffer(body)
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", res)
-			chiRouter.ServeHTTP(w, req)
-		}
-	})
-}
-
-func BenchmarkPostBatchSingleURLJSON(b *testing.B) {
-	b.Run("", func(b *testing.B) {
-		chiRouter, _, _ := initTestServer()
-		for i := 0; i < b.N; i++ {
-
-			link := "https://www.gmail.com"
-			existURL := deliveryhttp.URL{FullURL: link}
-			body, _ := json.Marshal(existURL)
-			res := bytes.NewBuffer(body)
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodPost, "/api/shorten", res)
-			chiRouter.ServeHTTP(w, req)
-		}
-	})
-}
-
-func BenchmarkPostBatchURLText(b *testing.B) {
-	b.Run("", func(b *testing.B) {
-		chiRouter, _, _ := initTestServer()
-		for i := 0; i < b.N; i++ {
-			link := "https://www.gmail.com"
-			w := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(link))
-			chiRouter.ServeHTTP(w, req)
-		}
-	})
 }
