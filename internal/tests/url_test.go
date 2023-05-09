@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func ExampleURL_PostBatchURLText() {
+func Example_PostBatchURLText() {
 	router, err := initTestEnv()
 	if err != nil {
 		return

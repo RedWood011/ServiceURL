@@ -74,12 +74,6 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 		SizeBufWorker:     100,
 	}
 
-	if cfg.DatabaseDSN != "" {
-		db, err = postgres.NewDatabase(context.Background(), cfg.DatabaseDSN, cfg.CountRepetitionBD)
-	} else {
-		dbFile, err = memoryfile.NewFileMap(cfg.FilePath)
-	}
-
 	ctx := context.Background()
 	logger := slog.New(slog.NewTextHandler(os.Stderr))
 	if cfg.DatabaseDSN != "" {
