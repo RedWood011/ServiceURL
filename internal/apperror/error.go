@@ -1,4 +1,4 @@
-// Package apperror предназначен для кастомных ошибок сервиса
+// Package apperror apperror предназначен для кастомных ошибок сервиса
 package apperror
 
 // Кастомные ошибки

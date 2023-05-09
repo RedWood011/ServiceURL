@@ -26,11 +26,6 @@ type URL struct {
 	ID      string
 }
 
-// PostBatchShortURLJSONBody
-type PostBatchShortURLJSONBody struct {
-	URLs []URL `json:"URLs"`
-}
-
 // PostBatchShortURLsJSONBody
 type PostBatchShortURLsJSONBody struct {
 	CorrelationID string `json:"correlation_id"`
@@ -72,17 +67,6 @@ func responseBatchShortURLsJSONBodyFromService(urls []entities.URL) []ResponseBa
 		})
 	}
 	return res
-}
-
-func (u PostBatchShortURLJSONBody) toEntity() []entities.URL {
-	urls := make([]entities.URL, 0, len(u.URLs))
-	for _, url := range u.URLs {
-		urls = append(urls, entities.URL{
-			FullURL: url.FullURL,
-		})
-	}
-
-	return urls
 }
 
 func toEntity(createURLs []PostBatchShortURLsJSONBody, id string) []entities.URL {
@@ -339,12 +323,12 @@ func (r *Router) DeleteBatchURLs(writer http.ResponseWriter, request *http.Reque
 		http.Error(writer, "Something wrong with request", http.StatusBadRequest)
 		return
 	}
-	var URLs []string
+	var urls []string
 	for _, short := range shortURls {
 		shortURL, _ := url.Parse(short)
-		URLs = append(URLs, strings.TrimLeft(shortURL.Path, "/"))
+		urls = append(urls, strings.TrimLeft(shortURL.Path, "/"))
 	}
-	r.service.DeleteShortURLs(ctx, URLs, ID)
+	r.service.DeleteShortURLs(ctx, urls, ID)
 
 	writer.WriteHeader(http.StatusAccepted)
 }
