@@ -47,6 +47,7 @@ type GetAllURLsUserID struct {
 	OriginalURL string `json:"original_url"`
 }
 
+// URLsByUserIDFromService
 func URLsByUserIDFromService(urls []entities.URL) []GetAllURLsUserID {
 	res := make([]GetAllURLsUserID, 0, len(urls))
 
@@ -59,6 +60,7 @@ func URLsByUserIDFromService(urls []entities.URL) []GetAllURLsUserID {
 	return res
 }
 
+// ResponseBatchShortURLsJSONBodyFromService
 func ResponseBatchShortURLsJSONBodyFromService(urls []entities.URL) []ResponseBatchShortURLsJSONBody {
 	res := make([]ResponseBatchShortURLsJSONBody, 0, len(urls))
 

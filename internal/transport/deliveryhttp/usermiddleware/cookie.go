@@ -12,10 +12,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// CookieType Тип куки
 type CookieType string
 
-const CookieName = "uuid"
-const timeSecondLive = 900
+// Настройки cookie
+const (
+	CookieName     = "uuid"
+	timeSecondLive = 900
+)
 
 // Cookie Проверка куки
 func Cookie(key string) func(http.Handler) http.Handler {
@@ -59,7 +63,7 @@ func Cookie(key string) func(http.Handler) http.Handler {
 	}
 }
 
-func CalculateHash(uid, key string) string {
+func calculateHash(uid, key string) string {
 	hash := hmac.New(sha256.New, []byte(key))
 	hash.Write([]byte(uid))
 	return hex.EncodeToString(hash.Sum(nil))
@@ -76,7 +80,7 @@ func checkHash(uid, hash, key string) bool {
 }
 
 func setUUIDCookie(w http.ResponseWriter, uid string, key string) string {
-	uuid := fmt.Sprintf("%s:%s", uid, CalculateHash(uid, key))
+	uuid := fmt.Sprintf("%s:%s", uid, calculateHash(uid, key))
 
 	http.SetCookie(w, &http.Cookie{
 		Name:   CookieName,
@@ -86,10 +90,11 @@ func setUUIDCookie(w http.ResponseWriter, uid string, key string) string {
 	return uid
 }
 
-// TODO вподумать над нормальным механизмом передачи ключа
+// CreateValidCookie TODO вподумать над нормальным механизмом передачи ключа
+// CreateValidCookie создает куку
 func CreateValidCookie() *http.Cookie {
 	id := uuid.NewString()
-	uuid := fmt.Sprintf("%s:%s", id, CalculateHash(id, "7cdb395a-e63e-445f-b2c4-90a400438ee4"))
+	uuid := fmt.Sprintf("%s:%s", id, calculateHash(id, "7cdb395a-e63e-445f-b2c4-90a400438ee4"))
 	return &http.Cookie{
 		Name:   CookieName,
 		Value:  uuid,

@@ -9,12 +9,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// compressionLevel Уровень компрессии
 const compressionLevel = 5
 
+// Router Маршрутизатор
 type Router struct {
 	service service.Translation
 }
 
+// NewRout
 func NewRout(service service.Translation) *Router {
 	return &Router{
 		service: service,
