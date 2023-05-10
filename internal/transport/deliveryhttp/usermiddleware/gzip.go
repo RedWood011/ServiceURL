@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// GzipHeader Проверка заголовка gzip
 func GzipHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Content-Type"), "gzip") {

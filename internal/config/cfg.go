@@ -1,3 +1,4 @@
+// Package config Пакет конфигурации сервиса
 package config
 
 import (
@@ -5,6 +6,7 @@ import (
 	"os"
 )
 
+// Config Конфигурация приложения
 type Config struct {
 	Port              string
 	Address           string
@@ -16,6 +18,7 @@ type Config struct {
 	SizeBufWorker     int
 }
 
+// NewConfig Создание конфигурации
 func NewConfig() *Config {
 	cfg := &Config{}
 	if cfg.Port = os.Getenv("SERVER_ADDRESS"); cfg.Port == "" {
@@ -37,7 +40,7 @@ func NewConfig() *Config {
 
 	if cfg.DatabaseDSN = os.Getenv("DATABASE_DSN"); cfg.DatabaseDSN == "" {
 		flag.StringVar(&cfg.DatabaseDSN, "d", "", "Database connection")
-		//flag.StringVar(&cfg.DatabaseDSN, "d", "postgres://qwerty:qwerty@localhost:5436/postgres?sslmode=disable", "")
+		//flag.StringVar(&cfg.DatabaseDSN, "d", "postgres://qwerty:qwerty@localhost:5438/postgres?sslmode=disable", "")
 	}
 
 	if cfg.CountRepetitionBD = os.Getenv("REPETITION_CONNECT"); cfg.CountRepetitionBD == "" {

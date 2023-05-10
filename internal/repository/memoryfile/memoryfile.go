@@ -8,6 +8,9 @@ import (
 	"sync"
 )
 
+// FileMap Запись данных в файл или память.
+
+// Если filepath не указан и не установлен флаг БД. То запись осуществляется в память.
 type FileMap struct {
 	m                   sync.Mutex
 	LongByShortURL      map[string]string
@@ -17,6 +20,7 @@ type FileMap struct {
 	shortURLByIsDeleted map[string]bool
 }
 
+// Params Параметры
 type Params struct {
 	UserID        string
 	ShortURL      string
@@ -31,6 +35,7 @@ type write struct {
 	IsDeleted bool   `json:"is_deleted"`
 }
 
+// NewFileMap
 func NewFileMap(path string) (*FileMap, error) {
 	if path == "" {
 		return &FileMap{
@@ -100,6 +105,7 @@ func NewFileMap(path string) (*FileMap, error) {
 	}, nil
 }
 
+// SaveDone Сохранение данных
 func (f *FileMap) SaveDone() error {
 	if f.filepath == "" {
 		return nil
@@ -134,6 +140,7 @@ func (f *FileMap) SaveDone() error {
 	return nil
 }
 
+// Ping Проверка
 func (f *FileMap) Ping(_ context.Context) error {
 	return nil
 }

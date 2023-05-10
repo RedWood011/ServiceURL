@@ -3,6 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -12,10 +14,12 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
+// Repository Repo.....
 type Repository struct {
-	db *pgxpool.Pool
+	DB *pgxpool.Pool
 }
 
+// NewDatabase Создать бд.....
 func NewDatabase(ctx context.Context, dsn string, maxAttempts string) (db *Repository, err error) {
 	var pool *pgxpool.Pool
 
@@ -44,11 +48,14 @@ func NewDatabase(ctx context.Context, dsn string, maxAttempts string) (db *Repos
 		return nil, fmt.Errorf("failed migrate database: %w", err)
 	}
 
-	return &Repository{db: pool}, err
+	return &Repository{DB: pool}, err
 }
 
 func startMigration(dsn string) (bool, error) {
-	m, err := migrate.New("file://internal/migrations", dsn)
+	_, b, _, _ := runtime.Caller(-0)
+	basePath := filepath.Dir(b)
+	migrationsPath := basePath + "/migrations"
+	m, err := migrate.New("file://"+migrationsPath, dsn)
 	if err != nil {
 		if err != migrate.ErrNoChange {
 			return false, err
@@ -63,11 +70,13 @@ func startMigration(dsn string) (bool, error) {
 	return true, nil
 }
 
+// Ping Пинг...
 func (r *Repository) Ping(ctx context.Context) error {
-	return r.db.Ping(ctx)
+	return r.DB.Ping(ctx)
 }
 
+// SaveDone Сохранение...
 func (r *Repository) SaveDone() error {
-	r.db.Close()
+	r.DB.Close()
 	return nil
 }

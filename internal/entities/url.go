@@ -1,3 +1,4 @@
+// Package entities Нужен для передачи бизнес-сущности
 package entities
 
 import (
@@ -5,6 +6,7 @@ import (
 	"time"
 )
 
+// URL ссылка
 type URL struct {
 	UserID        string
 	ShortURL      string
@@ -13,6 +15,7 @@ type URL struct {
 	IsDeleted     bool
 }
 
+// GenerateRandomString Генерирует случайную ссылку
 func (u *URL) GenerateRandomString(n int) {
 	var res string
 	line := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

@@ -1,3 +1,4 @@
+// Package workers Пакет для конкурентной работы с потоками
 package workers
 
 import (
@@ -7,11 +8,13 @@ import (
 	"sync"
 )
 
+// WorkerPool Пул потоков c функцией исполнения
 type WorkerPool struct {
 	numWorkers int
 	input      chan func(ctx context.Context) error
 }
 
+// New Создание пула
 func New(numWorkers, buf int) *WorkerPool {
 	return &WorkerPool{
 		numWorkers: numWorkers,
@@ -19,6 +22,7 @@ func New(numWorkers, buf int) *WorkerPool {
 	}
 }
 
+// Run Запуск потоков
 func (wp *WorkerPool) Run(ctx context.Context) {
 	wg := &sync.WaitGroup{}
 	for i := 0; i < wp.numWorkers; i++ {
@@ -48,6 +52,7 @@ func (wp *WorkerPool) Run(ctx context.Context) {
 	close(wp.input)
 }
 
+// Add Добавление задачи
 func (wp *WorkerPool) Add(job func(ctx context.Context) error) {
 	wp.input <- job
 }

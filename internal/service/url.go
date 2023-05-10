@@ -6,13 +6,18 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/entities"
 )
 
-const numberElement = 6
-const sizeDeleted = 50
+// Константы
+const (
+	numberElement = 6
+	sizeDeleted   = 50
+)
 
+// GetURLByID Получить оригинальную ссылку по shortURL
 func (s *TranslationServer) GetURLByID(ctx context.Context, shortURL string) (string, error) {
 	return s.Repo.GetFullURLByID(ctx, shortURL)
 }
 
+// GetAllURLsByUserID Получить все оригинальные ссылки по userID
 func (s *TranslationServer) GetAllURLsByUserID(ctx context.Context, userID string) ([]entities.URL, error) {
 	urls, err := s.Repo.GetAllURLsByUserID(ctx, userID)
 	if err != nil {
@@ -26,6 +31,7 @@ func (s *TranslationServer) GetAllURLsByUserID(ctx context.Context, userID strin
 	return urls, nil
 }
 
+// CreateShortURL Создать короткую ссылку
 func (s *TranslationServer) CreateShortURL(ctx context.Context, url entities.URL) (ID string, err error) {
 	url.GenerateRandomString(numberElement)
 
@@ -37,10 +43,13 @@ func (s *TranslationServer) CreateShortURL(ctx context.Context, url entities.URL
 	shortURL = s.address + url.ShortURL
 	return shortURL, nil
 }
+
+// PingDB Проверка подключения к базе
 func (s *TranslationServer) PingDB(ctx context.Context) error {
 	return s.Repo.Ping(ctx)
 }
 
+// CreateShortURLs Создать короткие ссылки
 func (s *TranslationServer) CreateShortURLs(ctx context.Context, urls []entities.URL) (URLs []entities.URL, err error) {
 	for i := 0; i < len(urls); i++ {
 		urls[i].GenerateRandomString(numberElement)
@@ -58,6 +67,7 @@ func (s *TranslationServer) CreateShortURLs(ctx context.Context, urls []entities
 	return createURLs, err
 }
 
+// DeleteShortURLs Удалить короткие ссылки
 func (s *TranslationServer) DeleteShortURLs(ctx context.Context, urls []string, userID string) {
 	if ctx.Err() != nil {
 		return
@@ -71,6 +81,7 @@ func (s *TranslationServer) DeleteShortURLs(ctx context.Context, urls []string, 
 	}
 }
 
+// splitURLs -.
 func splitURLs(urls []string, size int) [][]string {
 	res := make([][]string, 0, len(urls)/size+1)
 	url := make([]string, 0, size)

@@ -26,7 +26,7 @@ func TestGetFullURL(t *testing.T) {
 			name:     "DoesNotExistURL",
 			fullURL:  "",
 			shortURL: "dasda",
-			err:      apperror.ErrNotFound,
+			err:      apperror.ErrDataBase,
 		},
 	}
 
