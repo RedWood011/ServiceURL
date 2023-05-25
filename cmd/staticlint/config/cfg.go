@@ -32,6 +32,7 @@ func ReadConfig(cfg *Config) error {
 	return nil
 }
 
+// NewConfig конструктор
 func NewConfig() *Config {
 	return &Config{}
 }
