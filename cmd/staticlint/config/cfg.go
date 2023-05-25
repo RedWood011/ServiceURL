@@ -16,10 +16,6 @@ type Config struct {
 
 // ReadConfig чтение файла конфигурации
 func ReadConfig(cfg *Config) error {
-	/*file, err := os.Executable()
-	if err != nil {
-		return err
-	}*/
 	dir, err := os.Getwd()
 	fmt.Println(dir)
 	data, err := os.ReadFile(dir + path)
