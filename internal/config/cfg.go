@@ -138,9 +138,10 @@ func (c *Config) parseFlags() {
 	if isDefault(c.IsHTTPS) {
 		flag.BoolVar(&c.IsHTTPS, "https", isHTTPS, "Enable HTTPS")
 	}
-	if isDefault(c.IsHTTPS) {
-		flag.StringVar(&c.ConfigPath, "config", "", "configuration file")
-	}
+
+	flag.StringVar(&c.ConfigPath, "config", "", "configuration file")
+
+	flag.Parse()
 }
 
 func isDefault[T comparable](v T) bool {
