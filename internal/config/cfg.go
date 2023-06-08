@@ -70,31 +70,31 @@ func NewConfig() *Config {
 		fileCfg.KeyHash = keyHash
 	}
 
-	if isDefault(cfg.ServerAddress) {
+	if cfg.ServerAddress == serverAddress {
 		cfg.ServerAddress = fileCfg.ServerAddress
 	}
-	if isDefault(cfg.BaseURL) {
+	if cfg.BaseURL == baseURL {
 		cfg.BaseURL = fileCfg.BaseURL
 	}
-	if isDefault(cfg.FilePath) {
+	if cfg.FilePath == fileStoragePath {
 		cfg.FilePath = fileCfg.FilePath
 	}
-	if isDefault(cfg.DatabaseDSN) {
+	if cfg.DatabaseDSN == databaseDSN {
 		cfg.DatabaseDSN = fileCfg.DatabaseDSN
 	}
-	if isDefault(cfg.CountRepetitionBD) {
+	if cfg.CountRepetitionBD == CountRepetitionBD {
 		cfg.CountRepetitionBD = fileCfg.CountRepetitionBD
 	}
-	if isDefault(cfg.AmountWorkers) {
+	if cfg.AmountWorkers == AmountWorkers {
 		cfg.AmountWorkers = fileCfg.AmountWorkers
 	}
-	if isDefault(cfg.SizeBufWorker) {
+	if cfg.SizeBufWorker == SizeBufWorker {
 		cfg.SizeBufWorker = fileCfg.SizeBufWorker
 	}
-	if isDefault(cfg.IsHTTPS) {
+	if cfg.IsHTTPS == isHTTPS {
 		cfg.IsHTTPS = fileCfg.IsHTTPS
 	}
-	if isDefault(cfg.KeyHash) {
+	if cfg.KeyHash == keyHash {
 		cfg.KeyHash = fileCfg.KeyHash
 	}
 
@@ -110,33 +110,33 @@ func (c *Config) parseEnv() {
 
 func (c *Config) parseFlags() {
 	if isDefault(c.ServerAddress) {
-		flag.StringVar(&c.ServerAddress, "a", "", "Server port")
+		flag.StringVar(&c.ServerAddress, "a", serverAddress, "Server port")
 	}
 	if isDefault(c.BaseURL) {
-		flag.StringVar(&c.BaseURL, "b", "", "Server  URL")
+		flag.StringVar(&c.BaseURL, "b", baseURL, "Server  URL")
 	}
 	if isDefault(c.FilePath) {
-		flag.StringVar(&c.FilePath, "f", "", "File storage path")
+		flag.StringVar(&c.FilePath, "f", fileStoragePath, "File storage path")
 	}
 	if isDefault(c.KeyHash) {
-		flag.StringVar(&c.KeyHash, "key", "", "KeyHash secret")
+		flag.StringVar(&c.KeyHash, "key", keyHash, "KeyHash secret")
 	}
 	if isDefault(c.DatabaseDSN) {
-		flag.StringVar(&c.DatabaseDSN, "d", "", "Database DSN")
+		flag.StringVar(&c.DatabaseDSN, "d", databaseDSN, "Database DSN")
 	}
 	if isDefault(c.CountRepetitionBD) {
-		flag.IntVar(&c.CountRepetitionBD, "r", 0, "CountRepetitionBD")
+		flag.IntVar(&c.CountRepetitionBD, "r", CountRepetitionBD, "CountRepetitionBD")
 	}
 
 	if isDefault(c.AmountWorkers) {
-		flag.IntVar(&c.AmountWorkers, "workers", 0, "Number of workers")
+		flag.IntVar(&c.AmountWorkers, "workers", AmountWorkers, "Number of workers")
 	}
 	if isDefault(c.SizeBufWorker) {
-		flag.IntVar(&c.SizeBufWorker, "buff", 0, "Workers channel buffer")
+		flag.IntVar(&c.SizeBufWorker, "buff", SizeBufWorker, "Workers channel buffer")
 	}
 
 	if isDefault(c.IsHTTPS) {
-		flag.BoolVar(&c.IsHTTPS, "https", false, "Enable HTTPS")
+		flag.BoolVar(&c.IsHTTPS, "https", isHTTPS, "Enable HTTPS")
 	}
 	if isDefault(c.IsHTTPS) {
 		flag.StringVar(&c.ConfigPath, "config", "", "configuration file")
