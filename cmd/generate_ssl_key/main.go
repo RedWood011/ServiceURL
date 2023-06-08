@@ -75,14 +75,16 @@ func generate() {
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	filekey, err := os.Create("server_key.key")
-	_, err = filekey.Write(privateKeyPEM.Bytes())
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	_, err = filekey.Write(privateKeyPEM.Bytes())
 	if err != nil {
 		log.Fatal(err)
 	}
