@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -21,12 +22,22 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+// Global variables
+var (
+	buildVersion = "N/A"
+	buildDate    = "N/A"
+	buildCommit  = "N/A"
+)
+
 func main() {
 	var (
 		db     *postgres.Repository
 		dbFile *memoryfile.FileMap
 		err    error
 	)
+	fmt.Printf("Build version: %s\n", buildVersion)
+	fmt.Printf("Build date: %s\n", buildDate)
+	fmt.Printf("Build commit: %s\n", buildCommit)
 
 	cfg := config.NewConfig()
 	ctx := context.Background()
