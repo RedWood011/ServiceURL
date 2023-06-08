@@ -12,11 +12,12 @@ import (
 )
 
 const (
-	serverAddress     = ":8080"
-	baseURL           = "http://localhost:8080"
-	fileStoragePath   = ""
-	keyHash           = "7cdb395a-e63e-445f-b2c4-90a400438ee4"
-	databaseDSN       = "postgres://qwerty:qwerty@localhost:5438/postgres?sslmode=disable"
+	serverAddress   = ":8080"
+	baseURL         = "http://localhost:8080"
+	fileStoragePath = ""
+	keyHash         = "7cdb395a-e63e-445f-b2c4-90a400438ee4"
+	//databaseDSN       = "postgres://qwerty:qwerty@localhost:5438/postgres?sslmode=disable"
+	databaseDSN       = ""
 	CountRepetitionBD = 5
 	AmountWorkers     = 5
 	SizeBufWorker     = 100
