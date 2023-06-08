@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
@@ -62,13 +63,20 @@ func main() {
 		log.Fatal("repo ping failed")
 	}
 
-	workerPool := workers.New(cfg.NumWorkers, cfg.SizeBufWorker)
+	workerPool := workers.New(cfg.AmountWorkers, cfg.SizeBufWorker)
 
-	serv := service.New(repo, logger, workerPool, cfg.Address)
+	serv := service.New(repo, logger, workerPool, cfg.BaseURL)
+
+	tlsConfig := &tls.Config{
+		MinVersion:       tls.VersionTLS11,
+		CurvePreferences: []tls.CurveID{},
+		CipherSuites:     []uint16{},
+	}
 
 	httpServer := http.Server{
-		Handler: deliveryhttp.NewRouter(chi.NewRouter(), serv, cfg.KeyHash),
-		Addr:    cfg.Port,
+		Handler:   deliveryhttp.NewRouter(chi.NewRouter(), serv, cfg.KeyHash),
+		Addr:      cfg.ServerAddress,
+		TLSConfig: tlsConfig,
 	}
 
 	go func() {
@@ -108,7 +116,14 @@ func main() {
 		cancel()
 	}()
 
-	if err = httpServer.ListenAndServe(); err != http.ErrServerClosed {
+	if cfg.IsHTTPS {
+		err = httpServer.ListenAndServeTLS("server_crt.crt", "server_key.key")
+	} else {
+		err = httpServer.ListenAndServe()
+	}
+
+	if err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
+
 }
