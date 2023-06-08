@@ -19,7 +19,7 @@ import (
 
 func initTestEnv() (*Router, error) {
 	cfg := &config.Config{
-		BaseURL:  "http://localhost:8080/",
+		Address:  "http://localhost:8080/",
 		FilePath: "",
 	}
 	var db *postgres.Repository
@@ -35,7 +35,7 @@ func initTestEnv() (*Router, error) {
 	repo := repository.NewRepository(cfg.DatabaseDSN, db, dbFile)
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr))
-	sv := service.New(repo, logger, &worker, cfg.BaseURL)
+	sv := service.New(repo, logger, &worker, cfg.Address)
 
 	router := NewRout(sv)
 	return router, err
@@ -63,13 +63,13 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 		err    error
 	)
 	cfg := &config.Config{
-		BaseURL:  "http://localhost:8080",
+		Address:  "http://localhost:8080",
 		FilePath: "",
 		KeyHash:  "7cdb395a-e63e-445f-b2c4-90a400438ee4",
 		//DatabaseDSN:       "postgres://qwerty:qwerty@localhost:5438/postgres?sslmode=disable",
 		DatabaseDSN:       "",
-		CountRepetitionBD: 5,
-		AmountWorkers:     5,
+		CountRepetitionBD: "5",
+		NumWorkers:        5,
 		SizeBufWorker:     100,
 	}
 
@@ -84,9 +84,9 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 		return nil, nil, err
 	}
 	repo := repository.NewRepository(cfg.DatabaseDSN, db, dbFile)
-	workerPool := workers.New(cfg.AmountWorkers, cfg.SizeBufWorker)
+	workerPool := workers.New(cfg.NumWorkers, cfg.SizeBufWorker)
 
-	serv := service.New(repo, logger, workerPool, cfg.BaseURL)
+	serv := service.New(repo, logger, workerPool, cfg.Address)
 	chiRouter := NewRouter(chi.NewRouter(), serv, cfg.KeyHash)
 	if cfg.DatabaseDSN != "" {
 		cleanup(db)

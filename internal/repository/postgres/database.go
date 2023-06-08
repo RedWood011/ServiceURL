@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -19,8 +20,13 @@ type Repository struct {
 }
 
 // NewDatabase Создать бд.....
-func NewDatabase(ctx context.Context, dsn string, maxAttempts int) (db *Repository, err error) {
+func NewDatabase(ctx context.Context, dsn string, maxAttempts string) (db *Repository, err error) {
 	var pool *pgxpool.Pool
+
+	repetition, err := strconv.Atoi(maxAttempts)
+	if err != nil {
+		return nil, fmt.Errorf("convert countRepetitionBD err: %w", err)
+	}
 
 	err = doWithTries(func() error {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -32,7 +38,7 @@ func NewDatabase(ctx context.Context, dsn string, maxAttempts int) (db *Reposito
 		}
 
 		return nil
-	}, maxAttempts, 5*time.Second)
+	}, repetition, 5*time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect to database: %w", err)
 	}
