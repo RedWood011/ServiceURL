@@ -17,11 +17,11 @@ const (
 	fileStoragePath = ""
 	keyHash         = "7cdb395a-e63e-445f-b2c4-90a400438ee4"
 	//databaseDSN       = "postgres://qwerty:qwerty@localhost:5438/postgres?sslmode=disable"
-	databaseDSN       = ""
-	CountRepetitionBD = 5
-	AmountWorkers     = 5
-	SizeBufWorker     = 100
-	isHTTPS           = false
+	databaseDSN      = ""
+	countRepetitionB = 5
+	amountWorkers    = 5
+	sizeBufWorker    = 100
+	isHTTPS          = false
 )
 
 // Config Конфигурация приложения
@@ -63,9 +63,9 @@ func NewConfig() *Config {
 		fileCfg.BaseURL = baseURL
 		fileCfg.FilePath = fileStoragePath
 		fileCfg.DatabaseDSN = databaseDSN
-		fileCfg.CountRepetitionBD = CountRepetitionBD
-		fileCfg.AmountWorkers = AmountWorkers
-		fileCfg.SizeBufWorker = SizeBufWorker
+		fileCfg.CountRepetitionBD = countRepetitionB
+		fileCfg.AmountWorkers = amountWorkers
+		fileCfg.SizeBufWorker = sizeBufWorker
 		fileCfg.IsHTTPS = isHTTPS
 		fileCfg.KeyHash = keyHash
 	}
@@ -82,16 +82,16 @@ func NewConfig() *Config {
 	if cfg.DatabaseDSN == databaseDSN {
 		cfg.DatabaseDSN = fileCfg.DatabaseDSN
 	}
-	if cfg.CountRepetitionBD == CountRepetitionBD {
+	if cfg.CountRepetitionBD == countRepetitionB {
 		cfg.CountRepetitionBD = fileCfg.CountRepetitionBD
 	}
-	if cfg.AmountWorkers == AmountWorkers {
+	if cfg.AmountWorkers == amountWorkers {
 		cfg.AmountWorkers = fileCfg.AmountWorkers
 	}
-	if cfg.SizeBufWorker == SizeBufWorker {
+	if cfg.SizeBufWorker == sizeBufWorker {
 		cfg.SizeBufWorker = fileCfg.SizeBufWorker
 	}
-	if cfg.IsHTTPS == isHTTPS {
+	if !cfg.IsHTTPS {
 		cfg.IsHTTPS = fileCfg.IsHTTPS
 	}
 	if cfg.KeyHash == keyHash {
@@ -125,14 +125,14 @@ func (c *Config) parseFlags() {
 		flag.StringVar(&c.DatabaseDSN, "d", databaseDSN, "Database DSN")
 	}
 	if isDefault(c.CountRepetitionBD) {
-		flag.IntVar(&c.CountRepetitionBD, "r", CountRepetitionBD, "CountRepetitionBD")
+		flag.IntVar(&c.CountRepetitionBD, "r", countRepetitionB, "CountRepetitionBD")
 	}
 
 	if isDefault(c.AmountWorkers) {
-		flag.IntVar(&c.AmountWorkers, "workers", AmountWorkers, "Number of workers")
+		flag.IntVar(&c.AmountWorkers, "workers", amountWorkers, "Number of workers")
 	}
 	if isDefault(c.SizeBufWorker) {
-		flag.IntVar(&c.SizeBufWorker, "buff", SizeBufWorker, "Workers channel buffer")
+		flag.IntVar(&c.SizeBufWorker, "buff", sizeBufWorker, "Workers channel buffer")
 	}
 
 	if isDefault(c.IsHTTPS) {
@@ -170,9 +170,9 @@ func readConfigFromFIle(fileName string) Config {
 		FilePath:          cfg.FileStoragePath,
 		DatabaseDSN:       cfg.DatabaseDSN,
 		IsHTTPS:           cfg.IsHTTPS,
-		CountRepetitionBD: CountRepetitionBD,
-		AmountWorkers:     AmountWorkers,
-		SizeBufWorker:     SizeBufWorker,
+		CountRepetitionBD: countRepetitionB,
+		AmountWorkers:     amountWorkers,
+		SizeBufWorker:     sizeBufWorker,
 	}
 
 }
