@@ -22,6 +22,7 @@ const (
 	amountWorkers    = 5
 	sizeBufWorker    = 100
 	isHTTPS          = false
+	trustedSubnet    = "127.0.0.1/24"
 )
 
 // Config Конфигурация приложения
@@ -35,6 +36,7 @@ type Config struct {
 	IsHTTPS           bool   `env:"ENABLE_HTTPS" envDefault:""`
 	AmountWorkers     int    `env:"AMOUNT_WORKERS" envDefault:""`
 	SizeBufWorker     int    `env:"BUF_WORKERS" envDefault:""`
+	TrustedSubnet     string `env:"TRUSTED_SUBNET"`
 	ConfigPath        string
 }
 
@@ -45,6 +47,7 @@ type JSONConfig struct {
 	FileStoragePath string `json:"file_storage_path"`
 	DatabaseDSN     string `json:"database_dsn"`
 	IsHTTPS         bool   `json:"enable_https"`
+	TrustedSubnet   string `json:"trusted_subnet"`
 }
 
 // NewConfig Создание конфигурации
@@ -68,6 +71,7 @@ func NewConfig() *Config {
 		fileCfg.SizeBufWorker = sizeBufWorker
 		fileCfg.IsHTTPS = isHTTPS
 		fileCfg.KeyHash = keyHash
+
 	}
 
 	if cfg.ServerAddress == serverAddress {
@@ -96,6 +100,9 @@ func NewConfig() *Config {
 	}
 	if cfg.KeyHash == keyHash {
 		cfg.KeyHash = fileCfg.KeyHash
+	}
+	if cfg.TrustedSubnet == trustedSubnet {
+		cfg.TrustedSubnet = fileCfg.TrustedSubnet
 	}
 
 	return cfg
@@ -138,6 +145,10 @@ func (c *Config) parseFlags() {
 	if isDefault(c.IsHTTPS) {
 		flag.BoolVar(&c.IsHTTPS, "https", isHTTPS, "Enable HTTPS")
 	}
+	if isDefault(c.TrustedSubnet) {
+		flag.StringVar(&c.TrustedSubnet, "subnet", "", "Trusted subnet")
+
+	}
 
 	flag.StringVar(&c.ConfigPath, "config", "", "configuration file")
 
@@ -173,6 +184,7 @@ func readConfigFromFIle(fileName string) Config {
 		CountRepetitionBD: countRepetitionB,
 		AmountWorkers:     amountWorkers,
 		SizeBufWorker:     sizeBufWorker,
+		TrustedSubnet:     cfg.TrustedSubnet,
 	}
 
 }

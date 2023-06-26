@@ -25,7 +25,7 @@ func NewRout(service service.Translation) *Router {
 }
 
 // NewRouter Создание маршрутизатора
-func NewRouter(r chi.Router, serv service.Translation, key string) chi.Router {
+func NewRouter(r chi.Router, serv service.Translation, key, trustedSubnet string) chi.Router {
 	router := &Router{service: serv}
 	logger, _ := zap.NewProduction()
 	r.Use(usermiddleware.LoggerMiddleware(logger))
@@ -45,5 +45,9 @@ func NewRouter(r chi.Router, serv service.Translation, key string) chi.Router {
 	r.Get("/ping", router.PingDB)
 
 	r.Delete("/api/user/urls", router.DeleteBatchURLs)
+
+	if trustedSubnet != "" {
+		r.Get("/api/internal/stats", router.GetStats(trustedSubnet))
+	}
 	return r
 }

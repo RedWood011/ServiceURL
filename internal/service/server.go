@@ -16,6 +16,7 @@ type Translation interface {
 	CreateShortURLs(ctx context.Context, urls []entities.URL) ([]entities.URL, error)
 	PingDB(ctx context.Context) error
 	DeleteShortURLs(ctx context.Context, urls []string, usedID string)
+	GetAllStats(ctx context.Context) (entities.Stats, error)
 }
 
 // TranslationServer Сервер
