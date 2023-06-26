@@ -23,7 +23,7 @@ const (
 	sizeBufWorker    = 100
 	isHTTPS          = false
 	trustedSubnet    = "127.0.0.1/24"
-	grpc             = 5055
+	grpc             = "5055"
 )
 
 // Config Конфигурация приложения
@@ -39,7 +39,7 @@ type Config struct {
 	SizeBufWorker     int    `env:"BUF_WORKERS" envDefault:""`
 	TrustedSubnet     string `env:"TRUSTED_SUBNET"`
 	ConfigPath        string
-	GrpcAddress       int
+	GrpcAddress       string
 }
 
 // JSONConfig Конфигурация приложения json-файлом
@@ -107,6 +107,9 @@ func NewConfig() *Config {
 	if cfg.TrustedSubnet == trustedSubnet {
 		cfg.TrustedSubnet = fileCfg.TrustedSubnet
 	}
+	if cfg.GrpcAddress == grpc {
+		cfg.GrpcAddress = fileCfg.GrpcAddress
+	}
 
 	return cfg
 }
@@ -150,6 +153,9 @@ func (c *Config) parseFlags() {
 	}
 	if isDefault(c.TrustedSubnet) {
 		flag.StringVar(&c.TrustedSubnet, "subnet", "", "Trusted subnet")
+	}
+	if isDefault(c.GrpcAddress) {
+		flag.StringVar(&c.GrpcAddress, "grpcAdress", "5055", "Trusted subnet")
 
 	}
 

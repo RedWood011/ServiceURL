@@ -102,7 +102,7 @@ func main() {
 	})
 
 	g.Go(func() error {
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GrpcAddress))
+		lis, err := net.Listen("tcp", cfg.GrpcAddress)
 		if err != nil {
 			log.Printf("gRPC server failed to listen: %v", err.Error())
 			return err
@@ -150,5 +150,9 @@ func main() {
 		serverStopCtx()
 		cancel()
 	}()
+	err = g.Wait()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
