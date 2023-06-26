@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func BenchmarkPostBatchURLsJSON(b *testing.B) {
+func BenchmarkPostBatchURLs(b *testing.B) {
 	b.Run("", func(b *testing.B) {
 		chiRouter, _, _ := initTestServer()
 		for i := 0; i < b.N; i++ {
@@ -35,7 +35,7 @@ func BenchmarkPostBatchURLsJSON(b *testing.B) {
 	})
 }
 
-func BenchmarkPostBatchSingleURLJSON(b *testing.B) {
+func BenchmarkPostBatchSingleURL(b *testing.B) {
 	b.Run("", func(b *testing.B) {
 		chiRouter, _, _ := initTestServer()
 		for i := 0; i < b.N; i++ {
@@ -51,7 +51,7 @@ func BenchmarkPostBatchSingleURLJSON(b *testing.B) {
 	})
 }
 
-func BenchmarkPostBatchURLText(b *testing.B) {
+func BenchmarkPostOneURL(b *testing.B) {
 	b.Run("", func(b *testing.B) {
 		chiRouter, _, _ := initTestServer()
 		for i := 0; i < b.N; i++ {

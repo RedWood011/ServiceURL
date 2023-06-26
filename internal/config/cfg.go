@@ -22,6 +22,8 @@ const (
 	amountWorkers    = 5
 	sizeBufWorker    = 100
 	isHTTPS          = false
+	trustedSubnet    = "127.0.0.1/24"
+	grpc             = ":5055"
 )
 
 // Config Конфигурация приложения
@@ -35,7 +37,9 @@ type Config struct {
 	IsHTTPS           bool   `env:"ENABLE_HTTPS" envDefault:""`
 	AmountWorkers     int    `env:"AMOUNT_WORKERS" envDefault:""`
 	SizeBufWorker     int    `env:"BUF_WORKERS" envDefault:""`
+	TrustedSubnet     string `env:"TRUSTED_SUBNET"`
 	ConfigPath        string
+	GrpcAddress       string
 }
 
 // JSONConfig Конфигурация приложения json-файлом
@@ -45,6 +49,7 @@ type JSONConfig struct {
 	FileStoragePath string `json:"file_storage_path"`
 	DatabaseDSN     string `json:"database_dsn"`
 	IsHTTPS         bool   `json:"enable_https"`
+	TrustedSubnet   string `json:"trusted_subnet"`
 }
 
 // NewConfig Создание конфигурации
@@ -68,6 +73,8 @@ func NewConfig() *Config {
 		fileCfg.SizeBufWorker = sizeBufWorker
 		fileCfg.IsHTTPS = isHTTPS
 		fileCfg.KeyHash = keyHash
+		fileCfg.GrpcAddress = grpc
+
 	}
 
 	if cfg.ServerAddress == serverAddress {
@@ -96,6 +103,12 @@ func NewConfig() *Config {
 	}
 	if cfg.KeyHash == keyHash {
 		cfg.KeyHash = fileCfg.KeyHash
+	}
+	if cfg.TrustedSubnet == trustedSubnet {
+		cfg.TrustedSubnet = fileCfg.TrustedSubnet
+	}
+	if cfg.GrpcAddress == grpc {
+		cfg.GrpcAddress = fileCfg.GrpcAddress
 	}
 
 	return cfg
@@ -138,6 +151,13 @@ func (c *Config) parseFlags() {
 	if isDefault(c.IsHTTPS) {
 		flag.BoolVar(&c.IsHTTPS, "https", isHTTPS, "Enable HTTPS")
 	}
+	if isDefault(c.TrustedSubnet) {
+		flag.StringVar(&c.TrustedSubnet, "subnet", "", "Trusted subnet")
+	}
+	if isDefault(c.GrpcAddress) {
+		flag.StringVar(&c.GrpcAddress, "grpcAdress", ":5055", "Trusted subnet")
+
+	}
 
 	flag.StringVar(&c.ConfigPath, "config", "", "configuration file")
 
@@ -173,6 +193,8 @@ func readConfigFromFIle(fileName string) Config {
 		CountRepetitionBD: countRepetitionB,
 		AmountWorkers:     amountWorkers,
 		SizeBufWorker:     sizeBufWorker,
+		TrustedSubnet:     cfg.TrustedSubnet,
+		GrpcAddress:       grpc,
 	}
 
 }

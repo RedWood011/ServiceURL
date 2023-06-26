@@ -87,10 +87,10 @@ func toEntity(createURLs []PostBatchShortURLsJSONBody, id string) []entities.URL
 // формате GetURL.
 // В случае ошибки получение ссылок из базы данных - код ответа 500.
 // В случае отсутствия ссылок у пользователя - код ответа 204.
-func (r *Router) GetUserURLsJSON(writer http.ResponseWriter, request *http.Request) {
+func (rout *Router) GetUserURLs(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	id := ctx.Value(cookieName).(string)
-	urls, err := r.service.GetAllURLsByUserID(ctx, id)
+	urls, err := rout.service.GetAllURLsByUserID(ctx, id)
 
 	var appErr *apperror.AppError
 	if errors.As(err, &appErr) {
@@ -116,16 +116,16 @@ func (r *Router) GetUserURLsJSON(writer http.ResponseWriter, request *http.Reque
 
 }
 
-// GetURLByIDText - получение оригинальной ссылки по укороченному URL.
+// GetURLByID - получение оригинальной ссылки по укороченному URL.
 // Обязательный параметр URL - id.
 // Если ссылка верная - код ответа 307 и заголовок "location" с искомой ссылкой.
 // Если ссылка удалена код ответа 410
 // Если ошибка базы данных - код ответа 500
-func (r *Router) GetURLByIDText(writer http.ResponseWriter, request *http.Request) {
+func (rout *Router) GetURLByID(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	shortURL := chi.URLParam(request, "id")
 
-	fullURL, err := r.service.GetURLByID(ctx, shortURL)
+	fullURL, err := rout.service.GetURLByID(ctx, shortURL)
 
 	var appErr *apperror.AppError
 	if err != nil {
@@ -151,13 +151,13 @@ func (r *Router) GetURLByIDText(writer http.ResponseWriter, request *http.Reques
 	writer.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-// PostBatchURLText - создание укороченной ссылки.
+// PostOneURL - создание укороченной ссылки.
 // Формат запроса - строка с URL
 // При успешном создании код ответа 201, а так же в ответе будет укороченная ссылка.
 // В случае ошибки в формате запроса - код ответа 400.
 // В случае дубля оригинальной ссылки - код ответа 409.
 // В случае ошибки при записи в базу данных - код ответа 500.
-func (r *Router) PostBatchURLText(writer http.ResponseWriter, request *http.Request) {
+func (rout *Router) PostOneURL(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	ID := ctx.Value(cookieName).(string)
 
@@ -177,7 +177,7 @@ func (r *Router) PostBatchURLText(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	createdID, err := r.service.CreateShortURL(ctx, entities.URL{
+	createdID, err := rout.service.CreateShortURL(ctx, entities.URL{
 		UserID:  ID,
 		FullURL: string(body),
 	})
@@ -204,14 +204,14 @@ func (r *Router) PostBatchURLText(writer http.ResponseWriter, request *http.Requ
 	writer.Write([]byte(createdID))
 }
 
-// PostBatchSingleURLJSON - создание укороченной ссылки.
+// PostBatchSingleURL - создание укороченной ссылки.
 // Формат запроса PostURL.
 // При успешном создании код ответа 201, а так же в ответе будет укороченная ссылка
 // в result.
 // В случае ошибки в формате запроса - код ответа 400.
 // В случае, если такая ссылка уже имеется - код ответа 409.
 // В случае ошибки при записи в базу данных - код ответа 500.
-func (r *Router) PostBatchSingleURLJSON(writer http.ResponseWriter, request *http.Request) {
+func (rout *Router) PostBatchSingleURL(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	ID := ctx.Value(cookieName).(string)
 
@@ -228,7 +228,7 @@ func (r *Router) PostBatchSingleURLJSON(writer http.ResponseWriter, request *htt
 		return
 	}
 
-	createdID, err := r.service.CreateShortURL(ctx, entities.URL{
+	createdID, err := rout.service.CreateShortURL(ctx, entities.URL{
 		UserID:  ID,
 		FullURL: url.FullURL,
 	})
@@ -260,13 +260,13 @@ func (r *Router) PostBatchSingleURLJSON(writer http.ResponseWriter, request *htt
 	writeSuccessful(ctx, writer, http.StatusCreated, batchCreatedItemFromService(createdID))
 }
 
-// PostBatchURLsJSON - создание нескольких коротких URL сразу.
+// PostBatchURLs - создание нескольких коротких URL сразу.
 // Формат запроса json в виде списка объектов формата PostBatchShortURLsJSONBody.
 // В случае успешного создания - код ответа 201, а так же список созданных
 // URL в формате ResponseBatchShortURLsJSONBody.
 // В случае ошибки в формате запроса - код ответа 400.
 // В случае ошибки записи в базу данных - код ответа 500.
-func (r *Router) PostBatchURLsJSON(writer http.ResponseWriter, request *http.Request) {
+func (rout *Router) PostBatchURLs(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	ID := ctx.Value(cookieName).(string)
 
@@ -283,7 +283,7 @@ func (r *Router) PostBatchURLsJSON(writer http.ResponseWriter, request *http.Req
 	}
 
 	var appErr *apperror.AppError
-	createdIDs, err := r.service.CreateShortURLs(ctx, urls)
+	createdIDs, err := rout.service.CreateShortURLs(ctx, urls)
 	if err != nil {
 		if errors.As(err, &appErr) {
 			if errors.Is(err, apperror.ErrDataBase) {
@@ -299,9 +299,9 @@ func (r *Router) PostBatchURLsJSON(writer http.ResponseWriter, request *http.Req
 // PingDB - проверка соединения с базой данных.
 // В случае нормального соединения - код ответа 200.
 // В случае ошибки с базой данных - код ответа 500.
-func (r *Router) PingDB(writer http.ResponseWriter, request *http.Request) {
+func (rout *Router) PingDB(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
-	err := r.service.PingDB(ctx)
+	err := rout.service.PingDB(ctx)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 	}
@@ -314,7 +314,7 @@ func (r *Router) PingDB(writer http.ResponseWriter, request *http.Request) {
 // В случае ошибки в запросе - код ответа 400.
 // Ссылки удаляются не сразу, а выставляются в очередь на удаление в
 // WorkerPool(wp).
-func (r *Router) DeleteBatchURLs(writer http.ResponseWriter, request *http.Request) {
+func (rout *Router) DeleteBatchURLs(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	ID := ctx.Value(cookieName).(string)
 
@@ -328,7 +328,7 @@ func (r *Router) DeleteBatchURLs(writer http.ResponseWriter, request *http.Reque
 		shortURL, _ := url.Parse(short)
 		urls = append(urls, strings.TrimLeft(shortURL.Path, "/"))
 	}
-	r.service.DeleteShortURLs(ctx, urls, ID)
+	rout.service.DeleteShortURLs(ctx, urls, ID)
 
 	writer.WriteHeader(http.StatusAccepted)
 }

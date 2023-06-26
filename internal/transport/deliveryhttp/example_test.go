@@ -2,52 +2,52 @@ package deliveryhttp
 
 import "github.com/go-chi/chi/v5"
 
-func ExampleRouter_PostBatchURLText() {
+func ExampleRouter_PostOneURL() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
 	}
 
 	rtr := chi.NewRouter()
-	rtr.Post("/", router.PostBatchURLText)
+	rtr.Post("/", router.PostOneURL)
 }
 
-func ExampleRouter_PostBatchSingleURLJSON() {
+func ExampleRouter_PostBatchSingleURL() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
 	}
 
 	rtr := chi.NewRouter()
-	rtr.Post("/api/shorten", router.PostBatchSingleURLJSON)
+	rtr.Post("/api/shorten", router.PostBatchSingleURL)
 }
 
-func ExampleRouter_PostBatchURLsJSON() {
+func ExampleRouter_PostBatchURLs() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
 	}
 
 	rtr := chi.NewRouter()
-	rtr.Post("/api/shorten/batch", router.PostBatchURLsJSON)
+	rtr.Post("/api/shorten/batch", router.PostBatchURLs)
 }
 
-func ExampleRouter_GetURLByIDText() {
+func ExampleRouter_GetURLByID() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
 	}
 
 	rtr := chi.NewRouter()
-	rtr.Post("/{id}", router.GetURLByIDText)
+	rtr.Post("/{id}", router.GetURLByID)
 }
 
-func ExampleRouter_GetUserURLsJSON() {
+func ExampleRouter_GetUserURLs() {
 	router, err := initTestEnv()
 	if err != nil {
 		return
 	}
 
 	rtr := chi.NewRouter()
-	rtr.Get("/api/user/urls", router.GetUserURLsJSON)
+	rtr.Get("/api/user/urls", router.GetUserURLs)
 }

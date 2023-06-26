@@ -71,6 +71,7 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 		CountRepetitionBD: 5,
 		AmountWorkers:     5,
 		SizeBufWorker:     100,
+		TrustedSubnet:     "127.0.0.1/24",
 	}
 
 	ctx := context.Background()
@@ -87,7 +88,7 @@ func initTestServer() (chi.Router, *workers.WorkerPool, error) {
 	workerPool := workers.New(cfg.AmountWorkers, cfg.SizeBufWorker)
 
 	serv := service.New(repo, logger, workerPool, cfg.BaseURL)
-	chiRouter := NewRouter(chi.NewRouter(), serv, cfg.KeyHash)
+	chiRouter := NewRouter(chi.NewRouter(), serv, cfg.KeyHash, cfg.TrustedSubnet)
 	if cfg.DatabaseDSN != "" {
 		cleanup(db)
 	}

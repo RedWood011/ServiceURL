@@ -15,4 +15,5 @@ type Storage interface {
 	DeleteShortURLs(ctx context.Context, urls []string, userID string) error
 	SaveDone() error
 	Ping(ctx context.Context) error
+	GetStats(ctx context.Context) (entities.Stats, error)
 }
