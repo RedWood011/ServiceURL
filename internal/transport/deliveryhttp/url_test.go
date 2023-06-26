@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetUserURLsJSON(t *testing.T) {
+func TestGetUserURLs(t *testing.T) {
 	chiRouter, workerPool, err := initTestServer()
 	require.NoError(t, err)
 	go func() {
@@ -91,7 +91,7 @@ func TestGetUserURLsJSON(t *testing.T) {
 	}
 }
 
-func TestGetURLByIDText(t *testing.T) {
+func TestGetURLByID(t *testing.T) {
 	chiRouter, _, err := initTestServer()
 	require.NoError(t, err)
 	link := "https://www.gmail.com"
@@ -145,7 +145,7 @@ func TestGetURLByIDText(t *testing.T) {
 	}
 }
 
-func TestPostBatchURLText(t *testing.T) {
+func TestPostOneURL(t *testing.T) {
 	chiRouter, _, err := initTestServer()
 	require.NoError(t, err)
 
@@ -197,7 +197,7 @@ func TestPostBatchURLText(t *testing.T) {
 
 }
 
-func TestPostBatchSingleURLJSON(t *testing.T) {
+func TestPostBatchSingleURL(t *testing.T) {
 	chiRouter, _, err := initTestServer()
 	require.NoError(t, err)
 	link := "https://www.gmail.com"
@@ -249,7 +249,7 @@ func TestPostBatchSingleURLJSON(t *testing.T) {
 	}
 }
 
-func TestPostBatchURLsJSON(t *testing.T) {
+func TestPostBatchURLs(t *testing.T) {
 	chiRouter, _, err := initTestServer()
 	require.NoError(t, err)
 

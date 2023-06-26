@@ -23,6 +23,7 @@ const (
 	sizeBufWorker    = 100
 	isHTTPS          = false
 	trustedSubnet    = "127.0.0.1/24"
+	grpc             = 5055
 )
 
 // Config Конфигурация приложения
@@ -38,6 +39,7 @@ type Config struct {
 	SizeBufWorker     int    `env:"BUF_WORKERS" envDefault:""`
 	TrustedSubnet     string `env:"TRUSTED_SUBNET"`
 	ConfigPath        string
+	GrpcAddress       int
 }
 
 // JSONConfig Конфигурация приложения json-файлом
@@ -71,6 +73,7 @@ func NewConfig() *Config {
 		fileCfg.SizeBufWorker = sizeBufWorker
 		fileCfg.IsHTTPS = isHTTPS
 		fileCfg.KeyHash = keyHash
+		fileCfg.GrpcAddress = grpc
 
 	}
 
@@ -185,6 +188,7 @@ func readConfigFromFIle(fileName string) Config {
 		AmountWorkers:     amountWorkers,
 		SizeBufWorker:     sizeBufWorker,
 		TrustedSubnet:     cfg.TrustedSubnet,
+		GrpcAddress:       grpc,
 	}
 
 }

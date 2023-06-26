@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,9 +19,13 @@ import (
 	"github.com/RedWood011/ServiceURL/internal/repository/postgres"
 	"github.com/RedWood011/ServiceURL/internal/service"
 	"github.com/RedWood011/ServiceURL/internal/transport/deliveryhttp"
+	servergrpc "github.com/RedWood011/ServiceURL/internal/transport/grpc"
+	"github.com/RedWood011/ServiceURL/internal/transport/grpc/pb"
 	"github.com/RedWood011/ServiceURL/internal/workers"
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/exp/slog"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 )
 
 // Global variables
@@ -28,6 +33,8 @@ var (
 	buildVersion = "N/A"
 	buildDate    = "N/A"
 	buildCommit  = "N/A"
+	httpServer   http.Server
+	grpcServer   *grpc.Server
 )
 
 func main() {
@@ -66,6 +73,7 @@ func main() {
 	workerPool := workers.New(cfg.AmountWorkers, cfg.SizeBufWorker)
 
 	serv := service.New(repo, logger, workerPool, cfg.BaseURL)
+	grpcServ := servergrpc.NewGRPCServer(serv)
 
 	tlsConfig := &tls.Config{
 		MinVersion:       tls.VersionTLS11,
@@ -73,11 +81,37 @@ func main() {
 		CipherSuites:     []uint16{},
 	}
 
-	httpServer := http.Server{
-		Handler:   deliveryhttp.NewRouter(chi.NewRouter(), serv, cfg.KeyHash),
-		Addr:      cfg.ServerAddress,
-		TLSConfig: tlsConfig,
-	}
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		httpServer = http.Server{
+			Handler:   deliveryhttp.NewRouter(chi.NewRouter(), serv, cfg.KeyHash, cfg.TrustedSubnet),
+			Addr:      cfg.ServerAddress,
+			TLSConfig: tlsConfig,
+		}
+
+		if cfg.IsHTTPS {
+			err = httpServer.ListenAndServeTLS("server_crt.crt", "server_key.key")
+		} else {
+			err = httpServer.ListenAndServe()
+		}
+
+		if err != http.ErrServerClosed {
+			return err
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GrpcAddress))
+		if err != nil {
+			log.Printf("gRPC server failed to listen: %v", err.Error())
+			return err
+		}
+		grpcServer = grpc.NewServer()
+		pb.RegisterURLServer(grpcServer, grpcServ)
+		log.Printf("server listening at %v", lis.Addr())
+		return grpcServer.Serve(lis)
+	})
 
 	go func() {
 		workerPool.Run(ctx)
@@ -112,18 +146,9 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		grpcServer.GracefulStop()
 		serverStopCtx()
 		cancel()
 	}()
-
-	if cfg.IsHTTPS {
-		err = httpServer.ListenAndServeTLS("server_crt.crt", "server_key.key")
-	} else {
-		err = httpServer.ListenAndServe()
-	}
-
-	if err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
 
 }
