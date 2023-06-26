@@ -23,7 +23,7 @@ const (
 	sizeBufWorker    = 100
 	isHTTPS          = false
 	trustedSubnet    = "127.0.0.1/24"
-	grpc             = "5055"
+	grpc             = ":5055"
 )
 
 // Config Конфигурация приложения
@@ -155,7 +155,7 @@ func (c *Config) parseFlags() {
 		flag.StringVar(&c.TrustedSubnet, "subnet", "", "Trusted subnet")
 	}
 	if isDefault(c.GrpcAddress) {
-		flag.StringVar(&c.GrpcAddress, "grpcAdress", "5055", "Trusted subnet")
+		flag.StringVar(&c.GrpcAddress, "grpcAdress", ":5055", "Trusted subnet")
 
 	}
 

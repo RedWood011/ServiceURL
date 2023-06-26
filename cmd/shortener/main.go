@@ -125,9 +125,9 @@ func main() {
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
 		<-sig
-
-		// Shutdown signal with grace period of 30 seconds
-		shutdownCtx, cancel := context.WithTimeout(serverCtx, 30*time.Second)
+		log.Println("Shutdown signal received")
+		// Shutdown signal with grace period of 5 seconds
+		shutdownCtx, cancel := context.WithTimeout(serverCtx, 5*time.Second)
 
 		err = serv.Repo.SaveDone()
 		if err != nil {
@@ -149,6 +149,7 @@ func main() {
 		grpcServer.GracefulStop()
 		serverStopCtx()
 		cancel()
+		log.Println("Shutdown success")
 	}()
 	err = g.Wait()
 	if err != nil {
